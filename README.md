@@ -1,4 +1,4 @@
-English | [中文简体](./README_cn.md)
+English | [中文简体](https://github.com/exmemo-ai/obsidian-exmemo-tools/blob/master/README_cn.md)
 
 ## Introduction
 
