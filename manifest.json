@@ -3,7 +3,7 @@
 	"name": "ExMemo Tools",
 	"version": "1.0.0",
 	"minAppVersion": "0.1.0",
-	"description": "Use large models for smart document management and optimization, including relocating files, enhancing text, and generating metadata.",
+	"description": "Use LLMs for smart document management and optimization, including relocating files, enhancing text, and generating metadata.",
 	"author": "Yan.Xie",
 	"authorUrl": "http://tencent.xyan666.com/",
 	"isDesktopOnly": false

@@ -1,7 +1,7 @@
 {
 	"name": "exmemo-tools",
 	"version": "1.0.0",
-	"description": "Use large models for smart document management and optimization, including relocating files, enhancing text, and generating metadata.",
+	"description": "Use LLMs for smart document management and optimization, including relocating files, enhancing text, and generating metadata.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
