@@ -123,6 +123,9 @@ async function matchFolder(item: string, app: App, settings: ExMemoSettings) {
         }
         folders = folders.filter((f) => folder && f.path.startsWith(folder.path));
     }
+    for (const excludedFolder of settings.selectExcludedFolders) {
+        folders = folders.filter(folder => !folder.path.startsWith(excludedFolder));
+    }
     let option_list: string[] = [];
     if (folders.length >= 100) {
         const confirm = await confirmDialog(app, t("tooManyFolders_1") + folders.length + t("tooManyFolders_2"));

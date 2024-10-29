@@ -1,4 +1,4 @@
-import { Editor, MarkdownView, Plugin } from 'obsidian';
+import { Editor, MarkdownView, Plugin, Notice } from 'obsidian';
 import { DEFAULT_SETTINGS, ExMemoSettings, ExMemoSettingTab } from 'settings';
 import { adjustMdMeta } from 'meta';
 import { insertToDir } from 'select_folder';
@@ -53,6 +53,10 @@ export default class ExMemoToolsPlugin extends Plugin {
             return;
         }
         const selectedText = editor.getSelection();
+        if (!selectedText) {
+            new Notice(t("pleaseSelectText"));
+            return;
+        }
         const selectedTextArray = selectedText.split('\n');
         const content = selectedTextArray.filter((line) => line.trim() !== '');
 

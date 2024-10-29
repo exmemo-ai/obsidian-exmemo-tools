@@ -29,7 +29,7 @@ export default {
     "metaUpdateSetting": "更新元数据设置",
     "general": "常规",
     "updateMetaOptions": "更新选项",
-    "updateMetaOptionsDesc": "如果已经存在，选择是否重新生成",
+    "updateMetaOptionsDesc": "如果已经存在，是否重新生成",
     "updateForce": "强制更新已存在项",
     "updateNoLLM": "只更新不用LLM的项",
     "truncateContent": "内容太长是否截断",
