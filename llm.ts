@@ -1,9 +1,10 @@
 import OpenAI from "openai";
 import { App, MarkdownView, Notice, Plugin, SuggestModal } from 'obsidian';
 import { ExMemoSettings } from "settings";
+import ExMemoToolsPlugin from "main";
 import { t } from "./lang/helpers"
 
-export async function callLLM(req: String, settings: ExMemoSettings): Promise<string> {
+export async function callLLM(req: string, settings: ExMemoSettings): Promise<string> {
     let ret = '';
     let info = new Notice(t("llmLoading"), 0);
     //console.log('callLLM:', req);
@@ -48,9 +49,9 @@ function filterKey(prompts: Record<string, number>, query: string): Record<strin
 }
 
 class LLMModal extends SuggestModal<string> {
-    plugin: Plugin;
+    plugin: ExMemoToolsPlugin;
 
-    constructor(app: App, plugin: Plugin) {
+    constructor(app: App, plugin: ExMemoToolsPlugin) {
         super(app);
         this.plugin = plugin;
     }
@@ -59,7 +60,7 @@ class LLMModal extends SuggestModal<string> {
         let { inputEl } = this;
         inputEl.type = 'text';
         inputEl.placeholder = t("inputPrompt");
-        this.updateSuggestions();
+        this.inputEl.dispatchEvent(new Event('input'));
         this.limit = 20;
     }
 
@@ -90,7 +91,7 @@ class LLMModal extends SuggestModal<string> {
     }
 }
 
-async function chat(prompt: string, app: App, plugin: Plugin) {
+async function chat(prompt: string, app: App, plugin: ExMemoToolsPlugin) {
     let settings: ExMemoSettings = plugin.settings;
     let text = getSelection(this.app);
     let req = `Prompt:
@@ -117,7 +118,7 @@ ${text}`;
     plugin.saveSettings();
 }
 
-export async function llmAssistant(app: App, plugin: Plugin) {
+export async function llmAssistant(app: App, plugin: ExMemoToolsPlugin) {
     let text = getSelection(app);
     if (text === '') {
         new Notice(t("pleaseSelectText"));

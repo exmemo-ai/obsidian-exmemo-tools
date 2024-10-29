@@ -121,7 +121,7 @@ async function matchFolder(item: string, app: App, settings: ExMemoSettings) {
         if (folder === null || folder === undefined) {
             return;
         }
-        folders = folders.filter((f) => f.path.startsWith(folder.path));
+        folders = folders.filter((f) => folder && f.path.startsWith(folder.path));
     }
     let option_list: string[] = [];
     if (folders.length >= 100) {

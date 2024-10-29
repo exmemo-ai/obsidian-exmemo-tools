@@ -1,5 +1,5 @@
 import { PluginSettingTab, Setting, App, TextAreaComponent } from 'obsidian';
-import { getAllTags } from './utils';
+import { getTags } from './utils';
 import { t } from "./lang/helpers"
 
 export interface ExMemoSettings {
@@ -166,7 +166,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				btn.setButtonText(t("extract"))
 					.setCta()
 					.onClick(async () => {
-						const tags:Record<string, number> = await getAllTags(this.app);
+						const tags:Record<string, number> = await getTags(this.app);
 						const sortedTags = Object.entries(tags).sort((a, b) => b[1] - a[1]);
 						//const topTags = sortedTags.slice(0, 30).map(tag => tag[0]);
 						const topTags = sortedTags.filter(([_, count]) => count > 2).map(([tag]) => tag);

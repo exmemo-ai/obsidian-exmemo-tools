@@ -1,4 +1,4 @@
-import { App, TFile, MarkdownView, getAllTags } from 'obsidian';
+import { App, TFile, MarkdownView, TagCache, CachedMetadata } from 'obsidian';
 
 function splitIntoTokens(str: string) {
     const regex = /[\u4e00-\u9fa5]|[a-zA-Z0-9]+|[\.,!?;，。！？；#]|[\n]/g;
@@ -21,12 +21,12 @@ function joinTokens(tokens: any) {
     return result.trim();
 }
 
-export async function getAllTags(app: App): Promise<Record<string, number>> {
+export async function getTags(app: App): Promise<Record<string, number>> {
     const tagsMap: Record<string, number> = {};
-    this.app.vault.getMarkdownFiles().forEach(file => {
-        const cachedMetadata = this.app.metadataCache.getFileCache(file);
+    this.app.vault.getMarkdownFiles().forEach((file: TFile) => {
+        const cachedMetadata : CachedMetadata|null = this.app.metadataCache.getFileCache(file);
         if (cachedMetadata?.tags) {
-            cachedMetadata.tags.forEach(tag => {
+            cachedMetadata.tags.forEach((tag: TagCache) => {
                 let tagName = tag.tag;
                 if (tagName.startsWith('#')) {
                     tagName = tagName.slice(1);

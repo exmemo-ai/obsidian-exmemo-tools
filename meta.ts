@@ -47,22 +47,22 @@ ${content_str}`;
     }
     ret = ret.replace(/`/g, '');
 
-    let ret_json = {};
+    let ret_json = {} as { tags?: string; description?: string };
     try {
         let json_str = ret.match(/{.*}/);
         if (json_str) {
-            ret_json = JSON.parse(json_str[0]);
+            ret_json = JSON.parse(json_str[0]) as { tags?: string; description?: string };
         }        
     } catch (error) {
         new Notice(t('parseError') + "\n" + error);
         console.error("parseError:", error);
         return;
     }
-    if ('tags' in ret_json) {
+    if (ret_json.tags) {
         const tags = ret_json.tags.split(',');
         updateFrontMatter(file, app, 'tags', tags, true);
     }
-    if ('description' in ret_json) {
+    if (ret_json.description) {
         updateFrontMatter(file, app, 'description', ret_json.description, false);
     }
 }
