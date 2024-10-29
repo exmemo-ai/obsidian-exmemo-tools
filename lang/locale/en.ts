@@ -21,7 +21,7 @@ export default {
   "exmemoSelectFolder": "Select a suitable folder for the current file",
   "exmemoInsertMd": "Insert the selected text into the best position",
   "exmemoLLMAssistant": "LLM Assistant",
-  "defaultSummaryPrompt": "Summarize the core content of the article directly without using phrases like 'this article.' The summary should be no more than 50 words.",
+  "defaultSummaryPrompt": "Summarize the core content of the article directly without using phrases like 'this article.' The summary should be no more than 50 words, and in the same language as the content.",
   "llmSettings": "LLM Settings",
   "apiKey": "API Key",
   "baseUrl": "Base URL",

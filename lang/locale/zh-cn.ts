@@ -21,7 +21,7 @@ export default {
     "exmemoSelectFolder": "为当前文件选择合适的目录",
     "exmemoInsertMd": "将选中的文本插入到 markdown 合适位置",
     "exmemoLLMAssistant": "LLM 助手",
-    "defaultSummaryPrompt": "直接总结文章的核心内容，不要使用'这篇文章'这样的短语，不超过50个字。",
+    "defaultSummaryPrompt": "直接总结文章的核心内容，不要使用'这篇文章'这样的短语，不超过50个字，且与内容使用相同语言回答。",
     "llmSettings": "LLM 设置",
     "apiKey": "API Key",
     "baseUrl": "Base URL",
