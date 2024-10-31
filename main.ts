@@ -64,7 +64,7 @@ export default class ExMemoToolsPlugin extends Plugin {
         markdown_str.replace(selectedText, "")
 
         const req = `
-Please insert the following content into the appropriate place in the main text. Return the modified main text, and enclose the inserted content in double hashtags for emphasis.
+Please insert the following content into the appropriate place in the main text. Return the modified main text, and enclose the inserted content with double equals signs (==).
 The content to be inserted is as follows:
 ${content.join('\n')}
 The markdown main text is as follows:
@@ -72,6 +72,9 @@ ${markdown_str}
 `;        
 
         let ret = await callLLM(req, this.settings);
-        editor.setValue(ret + "\n\n\n" + selectedText);
+        if (ret.startsWith("```markdown")) {
+            ret = ret.replace(/```markdown\n([\s\S]*?)```/g, "$1");
+        }
+        editor.setValue(ret + "\n\n" + t('insertContent') + "\n\n" + selectedText);
     }
 }
