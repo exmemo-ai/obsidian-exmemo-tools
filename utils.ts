@@ -102,12 +102,12 @@ export async function getContent(app: App, file: TFile | null, limit: number = 1
     return content_str;
 }
 
-export function updateFrontMatter(file: TFile, app: App, key: string, value: any, append: boolean = false) {
+export function updateFrontMatter(file: TFile, app: App, key: string, value: any, method: string) {
     app.fileManager.processFrontMatter(file, (frontmatter) => {
         if (value === undefined || value === null) {
             return;
         }
-        if (append) {
+        if (method === `append`) {
             let old_value = frontmatter[key];
             if (typeof value === 'string') {
                 if (old_value === undefined) {
@@ -122,7 +122,13 @@ export function updateFrontMatter(file: TFile, app: App, key: string, value: any
                 const unique_value = Array.from(new Set(new_value));
                 frontmatter[key] = unique_value;
             }
-        } else {
+        } else if (method === `update`) {
+            frontmatter[key] = value;
+        } else { // keep: keep_if_exists
+            let old_value = frontmatter[key];
+            if (old_value !== undefined) {
+                return;
+            }
             frontmatter[key] = value;
         }
     });

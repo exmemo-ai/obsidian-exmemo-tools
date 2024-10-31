@@ -57,4 +57,5 @@ export default {
   "migrationSuccess": "Migration successful",
   "excludedFolders": "Excluded Folders",
   "excludedFoldersDesc": "List the excluded target folders, separated by line breaks",
+  "insertContent": "Content to be inserted",
 }

@@ -60,10 +60,10 @@ ${content_str}`;
     }
     if (ret_json.tags) {
         const tags = ret_json.tags.split(',');
-        updateFrontMatter(file, app, 'tags', tags, true);
+        updateFrontMatter(file, app, 'tags', tags, 'append');
     }
     if (ret_json.description) {
-        updateFrontMatter(file, app, 'description', ret_json.description, false);
+        updateFrontMatter(file, app, 'description', ret_json.description, 'update');
     }
 }
 
@@ -72,9 +72,9 @@ function addOthersMeta(file:TFile, app: App) {
     const createdDate = new Date(created).toISOString().split('T')[0];
     const updated = file.stat.mtime;
     const updatedDate = new Date(updated).toISOString().split('T')[0];
-    updateFrontMatter(file, app, 'created', createdDate, false);
-    updateFrontMatter(file, app, 'updated', updatedDate, true);
-    updateFrontMatter(file, app, 'title', file.basename, false);
+    updateFrontMatter(file, app, 'created', createdDate, 'keep');
+    updateFrontMatter(file, app, 'updated', updatedDate, 'update');
+    updateFrontMatter(file, app, 'title', file.basename, 'keep');
 }
 
 

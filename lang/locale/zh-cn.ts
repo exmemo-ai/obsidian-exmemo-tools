@@ -57,4 +57,5 @@ export default {
     "migrationSuccess": "迁移成功",
     "excludedFolders": "排除目录",
     "excludedFoldersDesc": "列出排除的目标目录，目录之间用回车分隔",
+    "insertContent": "待插入内容",
 }
