@@ -1,9 +1,9 @@
 import { App, Notice, TFile } from 'obsidian';
-import { ExMemoSettings } from "settings";
-import { getContent } from 'utils';
-import { callLLM } from 'llm';
-import { t } from 'lang/helpers';
-import { updateFrontMatter } from 'utils';
+import { ExMemoSettings } from "./settings";
+import { getContent } from './utils';
+import { callLLM } from './llm';
+import { t } from './lang/helpers';
+import { updateFrontMatter } from './utils';
 
 export async function adjustMdMeta(app : App, settings: ExMemoSettings) {
     const file = app.workspace.getActiveFile();

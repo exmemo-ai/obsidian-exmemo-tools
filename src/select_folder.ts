@@ -1,6 +1,6 @@
 import { App, SuggestModal, Modal, Notice } from 'obsidian';
-import { ExMemoSettings } from 'settings';
-import { callLLM } from 'llm';
+import { ExMemoSettings } from './settings';
+import { callLLM } from './llm';
 import { t } from "./lang/helpers"
 
 export async function confirmDialog(app: App, message: string): Promise<boolean> {

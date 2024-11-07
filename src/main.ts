@@ -1,8 +1,8 @@
 import { Editor, MarkdownView, Plugin, Notice } from 'obsidian';
-import { DEFAULT_SETTINGS, ExMemoSettings, ExMemoSettingTab } from 'settings';
-import { adjustMdMeta } from 'meta';
-import { insertToDir } from 'select_folder';
-import { callLLM, llmAssistant } from 'llm';
+import { DEFAULT_SETTINGS, ExMemoSettings, ExMemoSettingTab } from './settings';
+import { adjustMdMeta } from './meta';
+import { insertToDir } from './select_folder';
+import { callLLM, llmAssistant } from './llm';
 import { t } from "./lang/helpers"
 
 export default class ExMemoToolsPlugin extends Plugin {
