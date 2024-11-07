@@ -1,6 +1,6 @@
 import { PluginSettingTab, Setting, App, TextAreaComponent } from 'obsidian';
-import { getTags } from './utils';
-import { t } from "./lang/helpers"
+import { getTags } from "./utils";
+import { t } from "./lang/helpers";
 
 export interface ExMemoSettings {
 	llmToken: string;
