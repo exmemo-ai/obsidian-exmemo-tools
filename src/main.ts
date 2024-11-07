@@ -10,28 +10,28 @@ export default class ExMemoToolsPlugin extends Plugin {
     async onload() {
         await this.loadSettings();
         this.addCommand({
-            id: 'exmemo-tools-adjust-meta',
+            id: 'adjust-meta',
             name: t('exmemoAdjustMeta'),
             editorCallback: (editor: Editor, view: MarkdownView) => {
                 adjustMdMeta(this.app, this.settings);
             }
         });
         this.addCommand({
-            id: 'exmemo-tools-insert-dir',
+            id: 'insert-dir',
             name: t('exmemoSelectFolder'),
             editorCallback: (editor: Editor, view: MarkdownView) => {
                 insertToDir(this.app, this.settings);
             }
         });
         this.addCommand({
-            id: 'exmemo-tools-insert-md',
+            id: 'insert-md',
             name: t('exmemoInsertMd'),
             editorCallback: (editor: Editor, view: MarkdownView) => {
                 this.insertToMd()
             }
         });
         this.addCommand({
-            id: 'exmemo-tools-llm',
+            id: 'llm-assistant',
             name: t('exmemoLLMAssistant'),
             editorCallback: (editor: Editor, view: MarkdownView) => {
                 llmAssistant(this.app, this);
