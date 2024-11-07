@@ -1,8 +1,8 @@
 import OpenAI from "openai";
 import { App, MarkdownView, Notice, Plugin, SuggestModal } from 'obsidian';
-import { ExMemoSettings } from "settings";
-import ExMemoToolsPlugin from "main";
-import { t } from "./lang/helpers"
+import { ExMemoSettings } from "./settings";
+import ExMemoToolsPlugin from "./main";
+import { t } from "./lang/helpers";
 
 export async function callLLM(req: string, settings: ExMemoSettings): Promise<string> {
     let ret = '';
