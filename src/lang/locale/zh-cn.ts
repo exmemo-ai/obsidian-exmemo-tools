@@ -9,7 +9,9 @@ export default {
     "tooManyFolders_1": "待选目录数量过多，当前有",
     "tooManyFolders_2": "个子目录，是否继续？",
     "searchDesc": "通过关键字过滤目录",
-    "pleaseSelectFolder": "请选择一个目录开始迁移", 
+    "pleaseSelectFolder": "请选择一个目录开始迁移",
+    "folderNotFound": "未找到目录：", 
+    "noResult": "LLM 无结果",
     "pleaseOpenFile": "请先打开一个文件",
     "llmError": "发生了一个错误，请稍后再试",
     "inputPrompt":"请输入提示词",
@@ -58,6 +60,7 @@ export default {
     "excludedFolders": "排除目录",
     "excludedFoldersDesc": "列出排除的目标目录，目录之间用回车分隔",
     "insertContent": "待插入内容",
+    //
     'donate': '捐赠',
     'bugMeACoffee': '请我喝咖啡',
     'supportThisPlugin': '支持此插件',

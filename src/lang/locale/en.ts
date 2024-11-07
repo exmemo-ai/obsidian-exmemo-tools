@@ -10,6 +10,8 @@ export default {
   "tooManyFolders_2": " subfolders, do you want to continue?",
   "searchDesc": "Filter folders by keyword",
   "pleaseSelectFolder": "Please select a folder to start migrating",
+  "folderNotFound": "Folder not found: ",
+  "noResult": "LLM no result",
   "pleaseOpenFile": "Please open a file first",
   "llmError": "An error occurred, please try again later",
   "inputPrompt": "Please enter the prompt",
@@ -58,6 +60,7 @@ export default {
   "excludedFolders": "Excluded Folders",
   "excludedFoldersDesc": "List the excluded target folders, separated by line breaks",
   "insertContent": "Content to be inserted",
+  //
   'donate': 'Donate',
   'bugMeACoffee': 'Buy Me a Coffee',
   'supportThisPlugin': 'Support this plugin',
