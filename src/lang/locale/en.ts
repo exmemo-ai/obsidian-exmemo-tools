@@ -58,4 +58,8 @@ export default {
   "excludedFolders": "Excluded Folders",
   "excludedFoldersDesc": "List the excluded target folders, separated by line breaks",
   "insertContent": "Content to be inserted",
+  'donate': 'Donate',
+  'bugMeACoffee': 'Buy Me a Coffee',
+  'supportThisPlugin': 'Support this plugin',
+  'supportThisPluginDesc': 'If you find this plugin helpful, consider buying me a coffee!',
 }

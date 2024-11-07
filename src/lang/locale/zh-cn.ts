@@ -58,4 +58,8 @@ export default {
     "excludedFolders": "排除目录",
     "excludedFoldersDesc": "列出排除的目标目录，目录之间用回车分隔",
     "insertContent": "待插入内容",
+    'donate': '捐赠',
+    'bugMeACoffee': '请我喝咖啡',
+    'supportThisPlugin': '支持此插件',
+    'supportThisPluginDesc': '如果您觉得这个插件有用，请考虑请我喝杯咖啡！',
 }

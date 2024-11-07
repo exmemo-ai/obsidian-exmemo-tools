@@ -210,5 +210,17 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				text.inputEl.setAttr('rows', '3');
 				text.inputEl.addClass('setting-textarea');
 			});
+		//
+		new Setting(containerEl).setName(t('donate')).setHeading();
+        new Setting(containerEl)
+            .setName(t('supportThisPlugin'))
+            .setDesc(t('supportThisPluginDesc'))
+            .addButton((button) => {
+                button.setButtonText(t('bugMeACoffee'))
+                    .setCta()
+                    .onClick(() => {
+                        window.open('https://buymeacoffee.com/xieyan0811y', '_blank');
+                    });
+            });			
 	}
 }
