@@ -61,3 +61,5 @@ It's recommended to set the LLM Assistant feature as a shortcut for quicker acce
 ## License
 
 This project is licensed under the GNU Lesser General Public License v3.0. For more details, please refer to the [LICENSE](./LICENSE) file.
+
+[![coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=%E2%98%95&slug=windingblack&button_colour=FFDD00&font_colour=000000&font_family=Comic&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/xieyan0811y)

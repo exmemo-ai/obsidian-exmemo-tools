@@ -33,3 +33,17 @@
     margin: 0 5px;
     cursor: pointer;
 }
+
+.dialog-button-container.right-aligned {
+    display: flex;
+    justify-content: flex-end;
+    margin: 10px;
+}
+
+.custom-suggestion-item {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+}

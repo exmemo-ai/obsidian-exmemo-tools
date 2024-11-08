@@ -59,3 +59,5 @@ ExMemo Tools 提供智能化的文档管理功能，帮助用户将文件自动�
 ## License
 
 本项目采用 GNU Lesser General Public License v3.0 许可证。有关详细信息，请参见 [LICENSE](./LICENSE) 文件。
+
+[![coffee](https://img.buymeacoffee.com/button-api/?text=Buy%20me%20a%20coffee&emoji=%E2%98%95&slug=windingblack&button_colour=FFDD00&font_colour=000000&font_family=Comic&outline_colour=000000&coffee_colour=ffffff)](https://buymeacoffee.com/xieyan0811y)

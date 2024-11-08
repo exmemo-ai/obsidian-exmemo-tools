@@ -1,4 +1,58 @@
-import { App, TFile, MarkdownView, TagCache, CachedMetadata } from 'obsidian';
+import { App, TFile, MarkdownView, TagCache, CachedMetadata, Modal, Notice } from 'obsidian';
+import OpenAI from "openai";
+import { ExMemoSettings } from "./settings";
+import { t } from "./lang/helpers"
+
+export async function callLLM(req: string, settings: ExMemoSettings): Promise<string> {
+    let ret = '';
+    let info = new Notice(t("llmLoading"), 0);
+    //console.log('callLLM:', req.length, 'chars', req);
+    //console.warn('callLLM:', settings.llmBaseUrl, settings.llmToken);
+    const openai = new OpenAI({
+        apiKey: settings.llmToken,
+        baseURL: settings.llmBaseUrl,
+        dangerouslyAllowBrowser: true
+    });
+    try {
+        const completion = await openai.chat.completions.create({
+            model: settings.llmModelName,
+            messages: [
+                { "role": "user", "content": req }
+            ]
+        });
+        if (completion.choices.length > 0) {
+            ret = completion.choices[0].message['content'] || ret;
+        }
+    } catch (error) {
+        new Notice(t("llmError") + "\n" + error as string);
+        console.warn('Error:', error as string);
+    }
+    info.hide();
+    return ret
+}
+
+export async function confirmDialog(app: App, message: string): Promise<boolean> {
+    return new Promise((resolve) => {
+        const modal = new Modal(app);
+        modal.titleEl.setText(t("confirm"));
+        modal.contentEl.createEl('p', { text: message });
+        const buttonContainer = modal.contentEl.createEl('div', { cls: 'dialog-button-container' });
+    
+        const yesButton = buttonContainer.createEl('button', { text: t("yes") });
+        yesButton.onclick = () => {
+            modal.close();
+            resolve(true);
+        };
+    
+        const noButton = buttonContainer.createEl('button', { text: t("no") });
+        noButton.onclick = () => {
+            modal.close();
+            resolve(false);
+        };
+
+        modal.open();
+    });
+}
 
 function splitIntoTokens(str: string) {
     const regex = /[\u4e00-\u9fa5]|[a-zA-Z0-9]+|[\.,!?;，。！？；#]|[\n]/g;

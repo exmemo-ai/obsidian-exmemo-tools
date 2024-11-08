@@ -1,38 +1,44 @@
 import { App, SuggestModal, Modal, Notice } from 'obsidian';
-import { ExMemoSettings } from 'settings';
-import { callLLM } from 'llm';
+import { ExMemoSettings } from './settings';
+import { callLLM } from "./utils";
+import { confirmDialog } from './utils';
 import { t } from "./lang/helpers"
 
-export async function confirmDialog(app: App, message: string): Promise<boolean> {
-    return new Promise((resolve) => {
-        const modal = new Modal(app);
-        modal.titleEl.setText(t("confirm"));
-        modal.contentEl.createEl('p', { text: message });
-        const buttonContainer = modal.contentEl.createEl('div', { cls: 'dialog-button-container' });
-    
-        const yesButton = buttonContainer.createEl('button', { text: t("yes") });
-        yesButton.onclick = () => {
-            modal.close();
-            resolve(true);
-        };
-    
-        const noButton = buttonContainer.createEl('button', { text: t("no") });
-        noButton.onclick = () => {
-            modal.close();
-            resolve(false);
-        };
-
-        modal.open();
-    });
-}
 
 class FolderSuggestModal extends SuggestModal<string> {
     settings: ExMemoSettings
     allowClose: boolean;
+    confirmButton: HTMLButtonElement;
+    inputValue: string;
 
     constructor(app: App, settings: ExMemoSettings) {
         super(app);
         this.settings = settings;
+        this.inputValue = '';
+        this.modalEl.addClass('folder-suggest-modal');
+
+        const buttonContainer = this.modalEl.createDiv('dialog-button-container');
+        buttonContainer.addClass('dialog-button-container');
+        buttonContainer.addClass('right-aligned'); // 添加样式类名
+        this.confirmButton = buttonContainer.createEl('button', {
+            text: t('confirm')
+        });
+        this.confirmButton.addEventListener('click', () => {
+            this.onConfirm();
+        });
+        this.inputEl.addEventListener('input', (e: InputEvent) => {
+            this.inputValue = (e.target as HTMLInputElement).value;
+        });
+        this.emptyStateText = t('noFolders');
+    }
+
+    onChooseSuggestion(item: string, evt: MouseEvent): void {
+        // abstract method
+    }
+
+    onConfirm(): void {
+        matchFolder(this.inputValue, this.app, this.settings);
+        this.close();
     }
 
     renderSuggestion(item: string, el: HTMLElement) {
@@ -52,12 +58,10 @@ class FolderSuggestModal extends SuggestModal<string> {
             counts[item] = count;
         });
         flist.sort((a, b) => counts[a] - counts[b]);
-        flist = [t('allFolders'), ...flist];
+        if (query === '' || t('allFolders').startsWith(query)) {
+            flist = [t('allFolders'), ...flist];
+        }
         return flist;
-    }
-
-    onChooseSuggestion(item: string, evt: MouseEvent): void {
-        matchFolder(item, this.app, this.settings);
     }
 
     handleKeyDown(evt: KeyboardEvent) {
@@ -80,9 +84,25 @@ class FolderSuggestModal extends SuggestModal<string> {
         this.inputEl.removeEventListener('keydown', this.handleKeyDown.bind(this));
         super.onClose();
     }
+
+    selectSuggestion(value: string, evt: MouseEvent | KeyboardEvent): void {
+        evt.preventDefault();
+        this.inputEl.value = value;
+        this.inputValue = value;
+
+        const inputEvent = new InputEvent('input', {
+            bubbles: true,
+            cancelable: true,
+        });
+        this.inputEl.dispatchEvent(inputEvent);
+        this.inputEl.focus();
+    }
 }
 
 class SelectModal extends Modal {
+    /*
+    A modal dialog that allows the user to select a folder to move file.
+    */
     options: string[];
     constructor(app: App, options: string[]) {
         super(app);
@@ -115,10 +135,16 @@ class SelectModal extends Modal {
 }
 
 async function matchFolder(item: string, app: App, settings: ExMemoSettings) {
+    const file = app.workspace.getActiveFile()
+    if (!file) {
+        new Notice(t('pleaseOpenFile'));
+        return;
+    }
     let folders = app.vault.getAllFolders();
     if (item !== t('allFolders')) {
         let folder = app.vault.getFolderByPath(item);
         if (folder === null || folder === undefined) {
+            new Notice(t("folderNotFound") + item);
             return;
         }
         folders = folders.filter((f) => folder && f.path.startsWith(folder.path));
@@ -128,7 +154,8 @@ async function matchFolder(item: string, app: App, settings: ExMemoSettings) {
     }
     let option_list: string[] = [];
     if (folders.length >= 100) {
-        const confirm = await confirmDialog(app, t("tooManyFolders_1") + folders.length + t("tooManyFolders_2"));
+        const desc = `"${item}" ${t("tooManyFolders_1")}${folders.length}${t("tooManyFolders_2")}`;
+        const confirm = await confirmDialog(app, desc);
         if (!confirm) {
             return;
         }
@@ -136,11 +163,6 @@ async function matchFolder(item: string, app: App, settings: ExMemoSettings) {
     if (folders.length <= 3) {
         option_list = folders.map((folder) => folder.path);
     } else {
-        const file = app.workspace.getActiveFile()
-        if (!file) {
-            new Notice(t('pleaseOpenFile'));
-            return;
-        }
         const current_file = file.basename;
         const fm = app.metadataCache.getFileCache(file);
         let req = '';
@@ -157,6 +179,7 @@ ${folders.map((folder) => folder.path).join('\n')}
 `;
         let options = await callLLM(req, settings);
         if (options === "" || options === undefined || options === null) {
+            new Notice(t("noResult"));
             return;
         }
         options = options.replace(/`/g, '');
