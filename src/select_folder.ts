@@ -29,6 +29,7 @@ class FolderSuggestModal extends SuggestModal<string> {
         this.inputEl.addEventListener('input', (e: InputEvent) => {
             this.inputValue = (e.target as HTMLInputElement).value;
         });
+        this.emptyStateText = t('noFolders');
     }
 
     onChooseSuggestion(item: string, evt: MouseEvent): void {
@@ -57,7 +58,7 @@ class FolderSuggestModal extends SuggestModal<string> {
             counts[item] = count;
         });
         flist.sort((a, b) => counts[a] - counts[b]);
-        if (query === '') {
+        if (query === '' || t('allFolders').startsWith(query)) {
             flist = [t('allFolders'), ...flist];
         }
         return flist;
@@ -153,7 +154,8 @@ async function matchFolder(item: string, app: App, settings: ExMemoSettings) {
     }
     let option_list: string[] = [];
     if (folders.length >= 100) {
-        const confirm = await confirmDialog(app, item + " " + t("tooManyFolders_1") + folders.length + t("tooManyFolders_2"));
+        const desc = `"${item}" ${t("tooManyFolders_1")}${folders.length}${t("tooManyFolders_2")}`;
+        const confirm = await confirmDialog(app, desc);
         if (!confirm) {
             return;
         }
