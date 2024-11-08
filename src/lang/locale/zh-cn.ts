@@ -15,6 +15,7 @@ export default {
     "pleaseOpenFile": "请先打开一个文件",
     "llmError": "发生了一个错误，请稍后再试",
     "inputPrompt":"请输入提示词",
+    "chatButton": "对话",
     "pleaseSelectText": "请先选择要处理的文本",
     "currentFileNotMarkdown": "当前文件不是 markdown 文件",
     "fileAlreadyContainsTagsAndDescription": "文件已经包含标签和描述",
@@ -24,10 +25,16 @@ export default {
     "exmemoInsertMd": "将选中的文本插入到 markdown 合适位置",
     "exmemoLLMAssistant": "LLM 助手",
     "defaultSummaryPrompt": "直接总结文章的核心内容，不要使用'这篇文章'这样的短语，不超过50个字，且与内容使用相同语言回答。",
+    //
     "llmSettings": "LLM",
     "apiKey": "API Key",
     "baseUrl": "Base URL",
     "modelName": "模型名称",
+    //
+    "llmAssistantSetting": "LLM 助手",
+    "llmAssistantDialogEdit": "提示词是否可编辑",
+    "llmAssistantDialogEditDesc": "是否允许编辑之前保存的提示词，如果允许，需要通过按钮来触发对话",
+    //
     "metaUpdateSetting": "更新元数据",
     "general": "常规",
     "updateMetaOptions": "更新选项",

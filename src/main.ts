@@ -2,7 +2,7 @@ import { Editor, MarkdownView, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, ExMemoSettings, ExMemoSettingTab } from './settings';
 import { adjustMdMeta } from './meta';
 import { insertToDir } from './select_folder';
-import { llmAssistant } from './llm';
+import { llmAssistant } from './llm_assistant';
 import { insertToMd } from './edit_md';
 import { t } from "./lang/helpers"
 

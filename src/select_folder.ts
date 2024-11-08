@@ -1,6 +1,6 @@
 import { App, SuggestModal, Modal, Notice } from 'obsidian';
 import { ExMemoSettings } from './settings';
-import { callLLM } from './llm';
+import { callLLM } from "./utils";
 import { confirmDialog } from './utils';
 import { t } from "./lang/helpers"
 
@@ -17,8 +17,9 @@ class FolderSuggestModal extends SuggestModal<string> {
         this.inputValue = '';
         this.modalEl.addClass('folder-suggest-modal');
 
-        const buttonContainer = this.modalEl.createDiv('button-container');
-        buttonContainer.addClass('button-container');
+        const buttonContainer = this.modalEl.createDiv('dialog-button-container');
+        buttonContainer.addClass('dialog-button-container');
+        buttonContainer.addClass('right-aligned'); // 添加样式类名
         this.confirmButton = buttonContainer.createEl('button', {
             text: t('confirm')
         });

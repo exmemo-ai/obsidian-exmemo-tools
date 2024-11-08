@@ -1,6 +1,6 @@
 import { MarkdownView, Notice, App } from 'obsidian';
 import { ExMemoSettings } from './settings';
-import { callLLM } from './llm';
+import { callLLM } from "./utils";
 import { t } from "./lang/helpers"
 
 export async function insertToMd(app: App, settings: ExMemoSettings) {

@@ -1,7 +1,7 @@
 import { App, Notice, TFile } from 'obsidian';
 import { ExMemoSettings } from "./settings";
 import { getContent } from './utils';
-import { callLLM } from './llm';
+import { callLLM } from "./utils";
 import { t } from './lang/helpers';
 import { updateFrontMatter } from './utils';
 

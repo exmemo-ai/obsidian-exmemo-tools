@@ -15,6 +15,7 @@ export default {
   "pleaseOpenFile": "Please open a file first",
   "llmError": "An error occurred, please try again later",
   "inputPrompt": "Please enter the prompt",
+  "chatButton": "Chat",
   "pleaseSelectText": "Please select the text to be processed first",
   "currentFileNotMarkdown": "The current file is not a markdown file",
   "fileAlreadyContainsTagsAndDescription": "The file already contains tags and description",
@@ -24,10 +25,16 @@ export default {
   "exmemoInsertMd": "Insert the selected text into the best position",
   "exmemoLLMAssistant": "LLM Assistant",
   "defaultSummaryPrompt": "Summarize the core content of the article directly without using phrases like 'this article.' The summary should be no more than 50 words, and in the same language as the content.",
+  //
   "llmSettings": "LLM",
   "apiKey": "API Key",
   "baseUrl": "Base URL",
   "modelName": "Model Name",
+  //
+  "llmAssistantSetting": "LLM Assistant",
+  "llmAssistantDialogEdit": "Is the prompt editable?",
+  "llmAssistantDialogEditDesc": "Whether to allow editing of previously saved prompts. If allowed, please trigger the dialog through the button",
+  //
   "metaUpdateSetting": "Update Meta",
   "general": "General",
   "updateMetaOptions": "Update Options",
