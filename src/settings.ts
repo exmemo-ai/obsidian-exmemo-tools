@@ -104,7 +104,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 			});
 		new Setting(containerEl).setName(t("metaUpdateSetting"))
 			.setHeading().setClass('setting-heading-1');
-		new Setting(containerEl).setName(t('general'))
+		new Setting(containerEl).setName(t('basics'))
 			.setHeading().setClass('setting-heading-2');
 		new Setting(containerEl)
 			.setName(t("updateMetaOptions"))

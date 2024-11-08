@@ -1,4 +1,4 @@
-import { App, TFile, MarkdownView, TagCache, CachedMetadata, Modal, Notice } from 'obsidian';
+import { App, TFile, MarkdownView, Modal, Notice, getAllTags } from 'obsidian';
 import OpenAI from "openai";
 import { ExMemoSettings } from "./settings";
 import { t } from "./lang/helpers"
@@ -78,19 +78,22 @@ function joinTokens(tokens: any) {
 export async function getTags(app: App): Promise<Record<string, number>> {
     const tagsMap: Record<string, number> = {};
     this.app.vault.getMarkdownFiles().forEach((file: TFile) => {
-        const cachedMetadata : CachedMetadata|null = this.app.metadataCache.getFileCache(file);
-        if (cachedMetadata?.tags) {
-            cachedMetadata.tags.forEach((tag: TagCache) => {
-                let tagName = tag.tag;
-                if (tagName.startsWith('#')) {
-                    tagName = tagName.slice(1);
-                }
-                if (tagsMap[tagName]) {
-                    tagsMap[tagName]++;
-                } else {
-                    tagsMap[tagName] = 1;
-                }
-            });
+        const cachedMetadata = this.app.metadataCache.getFileCache(file);
+        if (cachedMetadata) {
+            let tags = getAllTags(cachedMetadata);
+            if (tags) {
+                tags.forEach((tag) => {
+                    let tagName = tag;
+                    if (tagName.startsWith('#')) {
+                        tagName = tagName.slice(1);
+                    }
+                    if (tagsMap[tagName]) {
+                        tagsMap[tagName]++;
+                    } else {
+                        tagsMap[tagName] = 1;
+                    }
+                });
+            }
         }
     });
     return tagsMap;
