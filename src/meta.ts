@@ -39,6 +39,7 @@ The tags should be chosen from the following options: '${options}'. If there are
 ${settings.metaDescription}
 Please return in the following format: {"tags":"tag1,tag2,tag3","description":"brief summary"}, and in the same language as the content.
 The article content is as follows:
+
 ${content_str}`;
     
     let ret = await callLLM(req, settings);
@@ -49,7 +50,7 @@ ${content_str}`;
 
     let ret_json = {} as { tags?: string; description?: string };
     try {
-        let json_str = ret.match(/{.*}/);
+        let json_str = ret.match(/{.*}/s);
         if (json_str) {
             ret_json = JSON.parse(json_str[0]) as { tags?: string; description?: string };
         }        
