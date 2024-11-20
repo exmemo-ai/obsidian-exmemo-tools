@@ -75,7 +75,8 @@ function joinTokens(tokens: any) {
     return result.trim();
 }
 
-export async function getTags(app: App): Promise<Record<string, number>> {
+export async function loadTags(app: App): Promise<Record<string, number>> {
+    // use getAllTags from obsidian API
     const tagsMap: Record<string, number> = {};
     this.app.vault.getMarkdownFiles().forEach((file: TFile) => {
         const cachedMetadata = this.app.metadataCache.getFileCache(file);
