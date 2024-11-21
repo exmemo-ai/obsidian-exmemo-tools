@@ -32,13 +32,13 @@ export default {
   "baseUrl": "Base URL",
   "modelName": "Model name",
   //
-  "llmAssistantSetting": "LLM Assistant",
+  "llmAssistantSetting": "LLM assistant",
   "llmAssistantDialogEdit": "Is the prompt editable?",
   "llmAssistantDialogEditDesc": "Whether to allow editing of previously saved prompts. If allowed, please trigger the dialog through the button",
   //
-  "metaUpdateSetting": "Update Meta",
+  "metaUpdateSetting": "Update meta",
   "basics": "Basics",
-  "updateMetaOptions": "Update options",
+  "updateMetaOptions": "Update",
   "updateMetaOptionsDesc": "If it already exists, choose whether to regenerate",
   "updateForce": "Force update existing items",
   "updateNoLLM": "Only update items that do not use LLM",
@@ -71,7 +71,7 @@ export default {
   "insertContent": "Content to be inserted",
   //
   'donate': 'Donate',
-  'bugMeACoffee': 'Buy Me a Coffee',
+  'bugMeACoffee': 'Buy me a coffee',
   'supportThisPlugin': 'Support this plugin',
   'supportThisPluginDesc': 'If you find this plugin helpful, consider buying me a coffee!',
 }
