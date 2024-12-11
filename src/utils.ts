@@ -31,26 +31,38 @@ export async function callLLM(req: string, settings: ExMemoSettings): Promise<st
     return ret
 }
 
-export async function confirmDialog(app: App, message: string): Promise<boolean> {
-    return new Promise((resolve) => {
-        const modal = new Modal(app);
-        modal.titleEl.setText(t("confirm"));
-        modal.contentEl.createEl('p', { text: message });
-        const buttonContainer = modal.contentEl.createEl('div', { cls: 'dialog-button-container' });
+class ConfirmModal extends Modal {
+    private resolvePromise: (value: boolean) => void;
+    private message: string;
+
+    constructor(app: App, message: string, onResolve: (value: boolean) => void) {
+        super(app);
+        this.message = message;
+        this.resolvePromise = onResolve;
+    }
+
+    onOpen() {
+        this.titleEl.setText(t("confirm"));
+        this.contentEl.createEl('p', { text: this.message });
+        const buttonContainer = this.contentEl.createEl('div', { cls: 'dialog-button-container' });
     
         const yesButton = buttonContainer.createEl('button', { text: t("yes") });
         yesButton.onclick = () => {
-            modal.close();
-            resolve(true);
+            this.close();
+            this.resolvePromise(true);
         };
     
         const noButton = buttonContainer.createEl('button', { text: t("no") });
         noButton.onclick = () => {
-            modal.close();
-            resolve(false);
+            this.close();
+            this.resolvePromise(false);
         };
+    }
+}
 
-        modal.open();
+export async function confirmDialog(app: App, message: string): Promise<boolean> {
+    return new Promise((resolve) => {
+        new ConfirmModal(app, message, resolve).open();
     });
 }
 
@@ -78,8 +90,8 @@ function joinTokens(tokens: any) {
 export async function loadTags(app: App): Promise<Record<string, number>> {
     // use getAllTags from obsidian API
     const tagsMap: Record<string, number> = {};
-    this.app.vault.getMarkdownFiles().forEach((file: TFile) => {
-        const cachedMetadata = this.app.metadataCache.getFileCache(file);
+    app.vault.getMarkdownFiles().forEach((file: TFile) => {
+        const cachedMetadata = app.metadataCache.getFileCache(file);
         if (cachedMetadata) {
             let tags = getAllTags(cachedMetadata);
             if (tags) {

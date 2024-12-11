@@ -37,7 +37,6 @@ export default {
     "llmAssistantDialogEditDesc": "是否允许编辑之前保存的提示词，如果允许，需要通过按钮来触发对话",
     //
     "metaUpdateSetting": "更新元数据",
-    "basics": "常规",
     "updateMetaOptions": "更新选项",
     "updateMetaOptionsDesc": "如果已经存在，是否重新生成",
     "updateForce": "强制更新已存在项",

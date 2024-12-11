@@ -37,7 +37,6 @@ export default {
   "llmAssistantDialogEditDesc": "Whether to allow editing of previously saved prompts. If allowed, please trigger the dialog through the button",
   //
   "metaUpdateSetting": "Update meta",
-  "basics": "Basics",
   "updateMetaOptions": "Update",
   "updateMetaOptionsDesc": "If it already exists, choose whether to regenerate",
   "updateForce": "Force update existing items",
