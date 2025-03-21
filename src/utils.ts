@@ -3,9 +3,12 @@ import OpenAI from "openai";
 import { ExMemoSettings } from "./settings";
 import { t } from "./lang/helpers"
 
-export async function callLLM(req: string, settings: ExMemoSettings): Promise<string> {
+export async function callLLM(req: string, settings: ExMemoSettings, showNotice: boolean = true): Promise<string> {
     let ret = '';
-    let info = new Notice(t("llmLoading"), 0);
+    let info = null;
+    if (showNotice) {
+        info = new Notice(t("llmLoading"), 0);
+    }
     //console.log('callLLM:', req.length, 'chars', req);
     //console.warn('callLLM:', settings.llmBaseUrl, settings.llmToken);
     const openai = new OpenAI({
@@ -27,7 +30,9 @@ export async function callLLM(req: string, settings: ExMemoSettings): Promise<st
         new Notice(t("llmError") + "\n" + error as string);
         console.warn('Error:', error as string);
     }
-    info.hide();
+    if (info) {
+        info.hide();
+    }
     return ret
 }
 

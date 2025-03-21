@@ -73,4 +73,7 @@ export default {
   'bugMeACoffee': 'Buy me a coffee',
   'supportThisPlugin': 'Support this plugin',
   'supportThisPluginDesc': 'If you find this plugin helpful, consider buying me a coffee!',
+  // new
+  'exmemoGenerateNext': 'Generate next sentence',
+  'exmemoDirMeta': 'Generate meta data for the folder',
 }

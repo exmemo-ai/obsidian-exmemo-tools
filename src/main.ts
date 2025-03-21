@@ -1,10 +1,11 @@
 import { Editor, MarkdownView, Plugin } from 'obsidian';
 import { DEFAULT_SETTINGS, ExMemoSettings, ExMemoSettingTab } from './settings';
-import { adjustMdMeta } from './meta';
+import { adjustMdMeta, adjustDirMeta } from './meta';
 import { insertToDir } from './select_folder';
 import { llmAssistant } from './llm_assistant';
 import { insertToMd } from './edit_md';
 import { t } from "./lang/helpers"
+import { generateNextSentence } from './next_sentence';
 
 export default class ExMemoToolsPlugin extends Plugin {
     settings: ExMemoSettings;
@@ -36,6 +37,21 @@ export default class ExMemoToolsPlugin extends Plugin {
             name: t('exmemoLLMAssistant'),
             editorCallback: (editor: Editor, view: MarkdownView) => {
                 llmAssistant(this.app, this);
+            }
+        });
+        this.addCommand({
+            id: 'generate-next',
+            name: t('exmemoGenerateNext'),
+            editorCallback: (editor: Editor, view: MarkdownView) => {
+                generateNextSentence(this.app, this.settings);
+            }
+        });
+        // Add a command to 
+        this.addCommand({
+            id: 'dir-meta',
+            name: t('exmemoDirMeta'),
+            editorCallback: (editor: Editor, view: MarkdownView) => {
+                adjustDirMeta(this.app, this.settings);
             }
         });
         this.addSettingTab(new ExMemoSettingTab(this.app, this));

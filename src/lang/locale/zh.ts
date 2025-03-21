@@ -72,4 +72,7 @@ export default {
     'bugMeACoffee': '请我喝咖啡',
     'supportThisPlugin': '支持此插件',
     'supportThisPluginDesc': '如果您觉得这个插件有用，请考虑请我喝杯咖啡！',
+    // new
+    'exmemoGenerateNext': '生成下一句',
+    'exmemoDirMeta': '为目录生成元数据',
 }
