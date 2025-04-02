@@ -25,6 +25,7 @@ export default {
 
     // 元数据更新设置
     "metaSetting": "元数据",
+    "metaSettingDesc": "自动生成文件的元数据",
     "metaUpdateSetting": "更新元数据",
     "updateMetaOptions": "更新选项",
     "updateMetaOptionsDesc": "如果元数据已经存在，是否重新生成",
@@ -56,6 +57,8 @@ export default {
     "defaultTagsPrompt": "请提取这篇文章中最合适的不超过三个标签，并使用与内容相同的语言。",
     "tagsFieldName": "标签字段名",
     "tagsFieldNameDesc": "自动生成标签使用的字段名 (默认: tags)",
+    "simplifyTagsConfirm": "当前标签列表包含 {count} 个tokens，是否需要使用AI自动精简？",
+    "simplifyTagsPrompt": "请将以下标签列表精简到{count}个以内最重要的标签，保持原有格式，每行一个标签：",
 
     // 描述设置
     "description": "描述",
@@ -109,6 +112,7 @@ export default {
 
     // 捐赠相关
     "donate": "捐赠",
+    "donateDesc": "感谢您的支持",
     "supportThisPlugin": "支持此插件",
     "supportThisPluginDesc": "如果您喜欢这个插件，可以请我喝杯咖啡",
     "bugMeACoffee": "请我喝杯咖啡",
@@ -117,11 +121,12 @@ export default {
     "exmemoAdjustMeta": "生成元数据",
     "exmemoSelectFolder": "为当前文件选择合适的目录",
     "exmemoInsertMd": "将选中的文本插入到 markdown 合适位置",
-    "exmemoLLMAssistant": "LLM 助手",
+    "exmemoLLMAssistant": "智能编辑助手",
     'exmemoGenerateNext': '生成下一句',
 
     // LLM 助手设置
-    "llmAssistantSetting": "LLM 助手",
+    "llmAssistantSetting": "智能编辑",
+    "llmAssistantSettingDesc": "支持 LLM 对话、内容编辑和续写",
     "llmAssistantDialogEdit": "提示词是否可编辑",
     "llmAssistantDialogEditDesc": "是否允许编辑之前保存的提示词，如果允许，需要通过按钮来触发对话",
 
@@ -137,8 +142,9 @@ export default {
 
     // 文件迁移设置
     "folderSelectionSetting": "目录选择",
+    "folderSelectionSettingDesc": "为当前文件选择合适的目录，并迁移",
     "excludedFolders": "排除目录",
-    "excludedFoldersDesc": "为当前文件选择合适的目录，并迁移；列出排除的目标目录，目录之间用回车分隔",
+    "excludedFoldersDesc": "列出排除的目标目录，目录之间用回车分隔",
 
     // 编辑md文件
     "insertContent": "待插入内容",
@@ -163,9 +169,22 @@ export default {
 
     // 生成索引设置
     "indexFileSetting": "索引文件",
+    "indexFileSettingDesc": "为目录生成索引文件，并总结目录内容",
     "defaultIndexString": "索引文件名",
     "defaultIndexStringDesc": "索引文件名开头的默认字符串",
     "indexExclude": "排除的文件夹或文件",
     "indexExcludeDesc": "指定不需要建立的文件夹或文件，包含指定关键字的文件或目录将被排除。使用 * 作为通配符，并用逗号分隔。",
     "foundDirsNeedIndex": "{dirs} 个目录需要建立索引。",
+
+    // 提示词管理器
+    "promptManager": "提示词管理",
+    "addPrompt": "添加提示词",
+    "addNewPrompt": "添加新提示词",
+    "enterPrompt": "请输入提示词",
+    "editPrompt": "编辑提示词",
+    "useCount": "使用次数",
+    "save": "保存",
+    "managePrompts": "管理提示词",
+    "managePromptsDesc": "提示词管理器，支持添加、删除和编辑提示词",
+    "openPromptManager": "打开提示词管理器",
 }

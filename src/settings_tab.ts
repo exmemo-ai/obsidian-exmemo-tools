@@ -1,4 +1,5 @@
-import { PluginSettingTab, Setting, App, TextAreaComponent } from 'obsidian';
+import { PluginSettingTab, Setting, App, TextAreaComponent, Notice } from 'obsidian';
+import { PromptModal } from './prompts';
 import { loadTags } from "./utils";
 import { t } from "./lang/helpers";
 
@@ -59,6 +60,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		const llmContainer = this.containerEl.createEl('div');
 		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
 		collapseEl.createEl('summary', { text: t("llmAssistantSetting") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("llmAssistantSettingDesc"));
 
 		new Setting(collapseEl)
 			.setName(t("llmAssistantDialogEdit"))
@@ -70,12 +73,24 @@ export class ExMemoSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					});
 			});
+
+		new Setting(collapseEl)
+			.setName(t("managePrompts"))
+			.setDesc(t("managePromptsDesc"))
+			.addButton(btn => btn
+				.setButtonText(t("openPromptManager"))
+				.setCta()
+				.onClick(() => {
+					new PromptModal(this.app, this.plugin).open();
+				}));			
 	}
 
 	private addFolderSettings(): void {
 		const llmContainer = this.containerEl.createEl('div');
 		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
 		collapseEl.createEl('summary', { text: t("folderSelectionSetting") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("folderSelectionSettingDesc"));
 
 		new Setting(collapseEl)
 			.setName(t("excludedFolders"))
@@ -96,6 +111,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		const llmContainer = this.containerEl.createEl('div');
 		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
 		collapseEl.createEl('summary', { text: t("metaSetting") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("metaSettingDesc"));
 
 		// update meta settings
 		new Setting(collapseEl)
@@ -220,7 +237,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				btn.setButtonText(t("extract"))
 					.setCta()
 					.onClick(async () => {
-						const tags: Record<string, number> = await loadTags(this.app);
+						const tags: Record<string, number> = await loadTags(this.app, this.plugin.settings);
 						const sortedTags = Object.entries(tags).sort((a, b) => b[1] - a[1]);
 						//const topTags = sortedTags.slice(0, 30).map(tag => tag[0]);
 						const topTags = sortedTags.filter(([_, count]) => count > 2).map(([tag]) => tag);
@@ -231,7 +248,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 							}
 						}
 						this.plugin.settings.tags = currentTagList;
-						textComponent.setValue(this.plugin.settings.tags.join('\n'));
+						textComponent.setValue(this.plugin.settings.tags.join('\n'));						
 					});
 			});
 		new Setting(tagsCollapseEl)
@@ -474,6 +491,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		const llmContainer = this.containerEl.createEl('div');
 		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
 		collapseEl.createEl('summary', { text: t("indexFileSetting") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("indexFileSettingDesc"));
 
 		new Setting(collapseEl)
 			.setName(t("defaultIndexString"))
@@ -504,6 +523,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		const llmContainer = this.containerEl.createEl('div');
 		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
 		collapseEl.createEl('summary', { text: t("donate") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("donateDesc"));
 
 		new Setting(collapseEl)
 			.setName(t('supportThisPlugin'))

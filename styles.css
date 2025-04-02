@@ -72,3 +72,22 @@
     margin-left: 10px;
     padding-left: 10px;
 }
+
+.prompts-container {
+    max-height: 400px;
+    overflow-y: auto;
+    margin: 10px 0;
+}
+
+.prompt-item {
+    cursor: move;
+    padding: 5px;
+    border: 1px solid var(--background-modifier-border);
+    margin-bottom: 5px;
+    border-radius: 4px;
+}
+
+.prompt-item.dragging {
+    opacity: 0.5;
+    background: var(--background-modifier-hover);
+}

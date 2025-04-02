@@ -4,7 +4,7 @@ export interface ExMemoSettings {
 	llmToken: string;
 	llmBaseUrl: string;
 	llmModelName: string;
-	llmPrompts: Record<string, { count: number, lastAccess: number }>;
+	llmPrompts: Record<string, { count: number, lastAccess: number, priority: number }>;
 	llmDialogEdit: boolean
 	tags: string[];
 	metaIsTruncate: boolean;

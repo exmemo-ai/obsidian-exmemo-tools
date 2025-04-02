@@ -25,6 +25,7 @@ export default {
 
   // Meta Update Settings
   "metaSetting": "Meta",
+  "metaSettingDesc": "Automatically generate file metadata",
   "metaUpdateSetting": "Update meta",
   "updateMetaOptions": "Update",
   "updateMetaOptionsDesc": "If meta already exists, choose whether to regenerate",
@@ -56,6 +57,8 @@ export default {
   "defaultTagsPrompt": "Please extract up to three tags based on the following article content, and in the same language as the content.",
   "tagsFieldName": "Tags field name",
   "tagsFieldNameDesc": "Field name used for automatically generating tags (default: tags)",
+  "simplifyTagsConfirm": "The current tag list contains {count} tokens, do you want to use AI to simplify it?",
+  "simplifyTagsPrompt": "Please simplify the following tag list to {count} or fewer most important tags, keep the original format with one tag per line:",
 
   // Description Settings
   "description": "Description",
@@ -109,6 +112,7 @@ export default {
 
   // Donation Related
   "donate": "Donate",
+  "donateDesc": "Thank you for your support",
   "supportThisPlugin": "Support this plugin",
   "supportThisPluginDesc": "If you find this plugin helpful, consider buying me a coffee!",
   "bugMeACoffee": "Buy me a coffee",
@@ -117,11 +121,12 @@ export default {
   "exmemoAdjustMeta": "Generate meta data",
   "exmemoSelectFolder": "Select a suitable folder for the current file",
   "exmemoInsertMd": "Insert the selected text into the best position",
-  "exmemoLLMAssistant": "LLM assistant",
+  "exmemoLLMAssistant": "AI assistant",
   'exmemoGenerateNext': 'Generate next sentence',
 
   // LLM Assistant Settings
-  "llmAssistantSetting": "LLM assistant",
+  "llmAssistantSetting": "AI assistant",
+  "llmAssistantSettingDesc": "Supports LLM dialogue, content editing, and continuation",
   "llmAssistantDialogEdit": "Is the prompt editable?",
   "llmAssistantDialogEditDesc": "Whether to allow editing of previously saved prompts. If allowed, please trigger the dialog through the button",
 
@@ -137,6 +142,7 @@ export default {
 
   // File migration settings
   "folderSelectionSetting": "Folder selection",
+  "folderSelectionSettingDesc": "Select a suitable folder for the current file and migrate it. The selected folder will be used as the target folder for the current file.",
   "excludedFolders": "Excluded folders",
   "excludedFoldersDesc": "Select a suitable folder for the current file and migrate it. List the excluded target folders, separated by line breaks",
 
@@ -164,9 +170,22 @@ export default {
 
   // Generate index settings
   'indexFileSetting': "Index file",
+  "indexFileSettingDesc": "Generate index file for the directory and summarize the directory content",
   'defaultIndexString': "Index file name",
   'defaultIndexStringDesc': "Default string at the beginning of the index file name",
   'indexExclude': 'Excluded folders or files',
   'indexExcludeDesc': 'Specify the folders or files that do not need to be created. Files or directories containing the specified keywords will be excluded. Use * as a wildcard and separate them with commas.',
   'foundDirsNeedIndex': "{dirs} directories that need indexing.",
+
+  // Prompt Manager
+  "promptManager": "Prompt Manager",
+  "addPrompt": "Add Prompt",
+  "addNewPrompt": "Add New Prompt",
+  "enterPrompt": "Enter prompt",
+  "editPrompt": "Edit Prompt",
+  "useCount": "Usage count",
+  "save": "Save",
+  "managePrompts": "Manage Prompts",
+  "managePromptsDesc": "Prompt manager for adding, deleting and editing prompts",
+  "openPromptManager": "Open Prompt Manager"
 }

@@ -114,8 +114,28 @@ function joinTokens(tokens: any) {
     return result.trim();
 }
 
-export async function loadTags(app: App): Promise<Record<string, number>> {
-    // use getAllTags from obsidian API
+const MAX_TAGS_COUNT = 30;
+
+export async function simplifyTokens(allTags: string[], app: App, settings: ExMemoSettings): Promise<string[] | null> {
+    const tag_string = allTags.join(',');
+    const tokenCount = splitIntoTokens(tag_string).length;
+    const message = t("simplifyTagsConfirm").replace("{count}", tokenCount.toString());
+    
+    const shouldSimplify = await confirmDialog(app, message);
+    if (!shouldSimplify) {
+        return null;
+    }
+
+    const prompt = t("simplifyTagsPrompt").replace("{count}", MAX_TAGS_COUNT.toString());
+    const result = await callLLM(prompt + "\n\n" + allTags.join('\n'), settings, true);    
+    if (!result) {
+        return null;
+    }
+
+    return result.split('\n').filter(t => t.trim());
+}
+
+export async function loadTags(app: App, settings: ExMemoSettings): Promise<Record<string, number>> {
     const tagsMap: Record<string, number> = {};
     app.vault.getMarkdownFiles().forEach((file: TFile) => {
         const cachedMetadata = app.metadataCache.getFileCache(file);
@@ -136,6 +156,19 @@ export async function loadTags(app: App): Promise<Record<string, number>> {
             }
         }
     });
+
+    const allTags = Object.keys(tagsMap);
+    if (allTags.length > MAX_TAGS_COUNT) {
+        const simplifiedTags = await simplifyTokens(allTags, app, settings);
+        if (simplifiedTags) {
+            const newTagsMap: Record<string, number> = {};
+            simplifiedTags.forEach(tag => {
+                newTagsMap[tag] = tagsMap[tag] || 1;
+            });
+            return newTagsMap;
+        }
+    }
+
     return tagsMap;
 }
 
