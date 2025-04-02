@@ -35,3 +35,40 @@
     display: block;
     width: 100%;
 }
+
+.setting-item-collapse {
+    margin-left: 0px;
+    cursor: pointer;
+    margin-bottom: 20px;
+    margin-top: 10px;
+}
+
+.setting-item-collapse > summary {
+    font-weight: bold;
+    font-size: 1em;
+    opacity: 1;
+}
+
+.setting-item-collapse.nested-settings {
+    margin-left: 10px;
+}
+
+.setting-item-collapse.nested-settings > summary {
+    font-size: 0.95em;
+    opacity: 0.9;
+}
+
+.setting-item-collapse.nested-settings > .setting-item {
+    margin-left: 5px;
+    padding-left: 5px;
+}
+
+.setting-item-indent1 {
+    margin-left: 5px;
+    padding-left: 5px;
+}
+
+.setting-item-indent2 {
+    margin-left: 10px;
+    padding-left: 10px;
+}
