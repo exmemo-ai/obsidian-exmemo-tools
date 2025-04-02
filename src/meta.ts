@@ -51,39 +51,39 @@ export async function adjustFileMeta(file:TFile, app: App, settings: ExMemoSetti
     }
 }
 
-export async function getReq(file: TFile, app: App, settings: ExMemoSettings) {
+export async function getReq(file: TFile, app: App, settings: ExMemoSettings, force: boolean = false) {
     const content_str = await getContent(app, file, settings);
-    const tag_options = settings.tags.join(',');
-    let categories_options = settings.categories.join(',');
-    if (categories_options === '') {
-        categories_options = t('categoryUnknown');
+    const fm = app.metadataCache.getFileCache(file)?.frontmatter;
+    
+    // 构建基础请求内容
+    let reqParts = [];
+    let jsonParts = [];
+    
+    // 只有在需要生成标签时才添加标签相关内容
+    if (force || !fm?.[settings.metaTagsFieldName] || fm[settings.metaTagsFieldName].length === 0) {
+        const tag_options = settings.tags.join(',');
+        reqParts.push(`1. Tags: ${settings.metaTagsPrompt}\n   Available tags: ${tag_options}. Feel free to create new ones if none are suitable.`);
+        jsonParts.push(`"tags": "tag1,tag2,tag3"`);
     }
 
-    const req = `I need to generate tags, category, description, and title for the following article. Requirements:
+    // 添加其他元数据要求
+    let categories_options = settings.categories.join(',') || t('categoryUnknown');
+    reqParts.push(`${reqParts.length + 1}. Category: ${settings.metaCategoryPrompt}\n   Available categories: ${categories_options}. Must choose ONE from the available categories.`);
+    jsonParts.push(`"category": "category_name"`);
 
-1. Tags: ${settings.metaTagsPrompt}
-   Available tags: ${tag_options}. Feel free to create new ones if none are suitable.
+    reqParts.push(`${reqParts.length + 1}. Description: ${settings.metaDescription}`);
+    jsonParts.push(`"description": "brief summary"`);
 
-2. Category: ${settings.metaCategoryPrompt}
-   Available categories: ${categories_options}. Must choose ONE from the available categories.
+    if (settings.metaTitleEnabled) {
+        reqParts.push(`${reqParts.length + 1}. Title: ${settings.metaTitlePrompt}`);
+        jsonParts.push(`"title": "article title"`);
+    }
 
-3. Description: ${settings.metaDescription}
+    const req = `I need to generate metadata for the following article. Requirements:\n\n` +
+        reqParts.join('\n\n') +
+        `\n\nPlease return in the following JSON format:\n{\n    ${jsonParts.join(',\n    ')}\n}\n\n` +
+        `File path: ${file.path}\n\nThe article content is as follows:\n\n${content_str}`;
 
-4. Title: ${settings.metaTitlePrompt}
-
-Please return in the following JSON format:
-{
-    "tags": "tag1,tag2,tag3",
-    "category": "category_name",
-    "description": "brief summary",
-    "title": "article title"
-}
-
-File path: ${file.path}
-
-The article content is as follows:
-
-${content_str}`;
     return req;
 }
 
@@ -110,7 +110,7 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
         console.warn(t('fileAlreadyContainsTagsAndDescription'));
     }
 
-    const req = await getReq(file, app, settings);
+    const req = await getReq(file, app, settings, force);
     let ret = await callLLM(req, settings, showNotice);
     if (debug) {
         //console.log('content_str', content_str);
