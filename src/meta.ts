@@ -91,7 +91,6 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
             force: boolean=false, showNotice: boolean=true, debug: boolean=false) {
     const fm = app.metadataCache.getFileCache(file);
     let frontMatter = fm?.frontmatter || {};
-    let hasChanges = false;
         
     // 添加标签、类别、描述和标题
     if (!frontMatter[settings.metaTagsFieldName] || 
@@ -105,9 +104,9 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
             (!frontMatter[settings.metaCategoryFieldName] || 
                 frontMatter[settings.metaCategoryFieldName]?.trim() === '')) ||
         force) {
-        hasChanges = true;
     } else {
         console.warn(t('fileAlreadyContainsTagsAndDescription'));
+        return false;
     }
 
     const req = await getReq(file, app, settings, force);
@@ -166,7 +165,7 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
         updateFrontMatter(file, app, settings.metaTitleFieldName, title, 
             force || isEmpty ? 'update' : 'keep');
     }
-    return hasChanges;
+    return true;
 }
 
 // 使用自定义的日期格式化函数
