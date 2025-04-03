@@ -142,12 +142,14 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
     let dirCount = 0;
     if (dirs.length > 0) {
         for (const d of dirs) {
-            const indexFile = await getDirIndexFile(d, app, settings);
+            const indexFile = await getDirIndexFile(d, app, settings, false);
             if (indexFile) {
                 const hasInfo = checkFileInfo(indexFile, app, false);
                 if (!hasInfo) {
                     dirCount += 1;
                 }
+            } else {
+                dirCount += 1;
             }
         }
         if (debug) console.log('+ dir * 1000', dirCount * 1000);
