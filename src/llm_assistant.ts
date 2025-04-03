@@ -3,7 +3,8 @@ import { ExMemoSettings } from "./settings";
 import { callLLM } from "./utils";
 import ExMemoToolsPlugin from "./main";
 import { t } from "./lang/helpers";
-
+import { sortPromptsByPriority } from "./prompts";
+import { addPrompt } from "./prompts";
 
 function getSelection(app: App) {
     const editor = app.workspace.getActiveViewOfType(MarkdownView)?.editor;
@@ -13,23 +14,13 @@ function getSelection(app: App) {
     return editor.getSelection();
 }
 
-function filterKey(prompts: Record<string, { count: number, lastAccess: number }>, query: string) {
-    let result: Record<string, { count: number, lastAccess: number }> = prompts;
-    if (query !== '') {
-        result = {};
-        Object.keys(prompts).forEach(key => {
-            if (key.includes(query)) {
-                result[key] = prompts[key];
-            }
-        });    
-    }
-    let ret = Object.keys(result).sort((a, b) => {
-        if (prompts[b].count === prompts[a].count) {
-            return prompts[b].lastAccess - prompts[a].lastAccess;
-        }
-        return prompts[b].count - prompts[a].count;
-    });
-    return ret;
+function filterKey(prompts: Record<string, { count: number, lastAccess: number, priority: number|null }>, query: string) {
+    let result = query ? 
+        Object.fromEntries(
+            Object.entries(prompts).filter(([key]) => key.includes(query))
+        ) : prompts;
+    
+    return Object.keys(result).sort((a, b) => sortPromptsByPriority(result, a, b));
 }
 
 class LLMQuickModal extends SuggestModal<string> {
@@ -133,15 +124,8 @@ ${text}`;
     editor.replaceSelection(
         text + "\n\n" + ret + "\n"
     );
-    let prompts: Record<string, { count: number, lastAccess: number }> = settings.llmPrompts;
-    if (prompts[prompt]) {
-        prompts[prompt].count += 1;
-        prompts[prompt].lastAccess = Date.now();
-    } else {
-        prompts[prompt] = { count: 1, lastAccess: Date.now() };
-    }
-    settings.llmPrompts = prompts;
-    plugin.saveSettings();
+    
+    await addPrompt(plugin, prompt, 1);
 }
 
 export async function llmAssistant(app: App, plugin: ExMemoToolsPlugin) {

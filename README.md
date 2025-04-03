@@ -1,62 +1,44 @@
 English | [中文简体](https://github.com/exmemo-ai/obsidian-exmemo-tools/blob/master/README_cn.md)
 
-## Introduction
+# ExMemo Tools
 
-ExMemo Tools provides intelligent document management features, assisting users in automatically categorizing and organizing files into appropriate directories and locations. Leveraging the capabilities of large language models (LLM), it not only generates and updates file metadata automatically but also optimizes selected text content, thereby achieving efficient information management and document editing.
+ExMemo Tools is an Obsidian plugin powered by large language models (LLM), offering intelligent document management and content optimization features.
 
 ## Main Features
 
-* Generate and update the file's metadata, including tags, descriptions, titles, and editing times.
-* Optimize the selected content using large language models (LLM).
-* Move the current document to a suitable directory.
-* Insert the currently selected content into the appropriate position in the current document.
+* Smart File Archiving - Auto-recommend suitable directories
+* Smart Content Insertion - Auto-locate optimal insertion points
+* Metadata Management - Auto-generate tags, descriptions, titles
+* Directory Indexing - Create directory summaries and content tags
+* AI-Assisted Editing - Support content optimization and text continuation
 
-## Usage
+## Quick Start
 
-### Setup
+### Basic Configuration
 
-Before using the tool, ensure the following setup is completed:
+1. Configure LLM parameters: Set API key, base URL, and model name
+2. Optional: Configure tag list or auto-extract tags from repository
+3. Optional: Customize description generation prompts
+4. Recommended: Enable "content truncation" for long documents to control API costs
 
-* First, configure options related to LLM, including the API key, base URL, and model name.
-* If using the auto-generate tags feature, it is recommended to pre-fill the tag list or automatically extract existing tags from the current repository to ensure generated tags align with the user's style.
-* To modify the method for generating descriptions, adjust the prompt words for generating descriptions in the settings.
-* For generating metadata for longer articles, the model call may incur higher costs. It is recommended to control costs using the "content truncation" feature in the settings.
+### Core Features
 
-### Generating Metadata
+**Generate Metadata** (Ctrl+P > ExMemo Tools: Generate Metadata)
+- Auto-generate tags, descriptions, titles, categories, and dates
+- Support incremental updates for existing metadata
 
-Press Ctrl+P and select: ExMemo Tools: Generate Metadata.
+**Directory Index** (Right-click directory > ExMemo Generate Directory Index)
+- Generate directory structure and content summary
+- Auto-extract and aggregate tags
 
-Generating tags and descriptions can often be a daunting task. We frequently end up creating tags with the same meaning but different formulations, impacting subsequent processing. To solve this problem, we have implemented an automatic tag generation feature that can automatically create three tags each time. Users can define the range of tags in the settings or extract options from tags that appear more than twice in the current repository. For generating short descriptions of documents, the tool provides default prompt words, which users can edit in the settings to define their own style.
+**Smart Archiving** (Ctrl+P > ExMemo Tools: Select Suitable Directory for Current File)
+- Recommend best directories based on file content
+- Support directory filtering and path completion
 
-During the process of generating tags and descriptions, the document content must be provided to LLM. For lengthy documents, this might lead to higher costs. Therefore, the tool offers a truncation feature in the settings, allowing only the head, tail, or mid-title of a document to be sent to the model. For documents containing tags and descriptions, users can opt not to regenerate this information in the settings to effectively control costs.
-
-Additionally, generating titles, creation dates, and editing dates, although common, can be tedious tasks. Our tool offers one-click generation for these metadata elements, greatly simplifying daily workflows.
-
-### File Archiving
-
-Press Ctrl+P and select: ExMemo Tools: Select Suitable Directory for Current File.
-
-When our note data volume is vast and the directory structure is complex, it usually takes time to place new documents in appropriate directories. This tool provides a file archiving feature by submitting the currently open file's filename, the file description in the metadata, and the directory structure of the current repository to the large model, which recommends three most suitable directories for archiving. Users can quickly move the file to a directory by selecting one.
-
-To save the cost of using the large model and achieve more accurate archiving capability, users can select specific directories in the dialog box to use their subdirectories as options and support using the 'Tab' key for directory name completion. Moreover, an option is provided in the settings to exclude certain archiving directories to avoid interference from temporary directories.
-
-### Content Insertion Management
-
-Press Ctrl+P and select: ExMemo Tools: Insert the selected text into the best position.
-
-In cases where there is abundant note content, finding the suitable insertion point when you wish to add new fragments often requires reviewing the entire file. This tool helps users accurately locate the appropriate insertion point by sending the currently selected content along with the entire document to the large model, while also displaying the newly inserted content in bold, thereby significantly enhancing editing efficiency.
-
-### Content Optimization Upgrade
-
-Press Ctrl+P and select "ExMemo Tools: LLM Assistant".
-
-In the popup box, you can input any prompt. The tool will pass the prompt along with the currently selected text to the LLM, enabling functions such as text polishing, translation, reconstruction, etc., essentially embedding the LLM interface into Obsidian.
-
-Compared to chat tools, this tool doesn't remember previous conversations, thus conserving tokens.
-
-For regular users, the number of commonly used prompts is usually limited. The tool remembers the prompts entered by users and sorts them based on usage frequency for easy selection next time.
-
-It's recommended to set the LLM Assistant feature as a shortcut for quicker access.
+**Content Management** (Ctrl+P > ExMemo Tools: Insert selected text/LLM Assistant/Continue Writing)
+- Smart insertion point location
+- AI-assisted content editing (with prompt management)
+- Context-aware text continuation
 
 ## License
 

@@ -5,79 +5,184 @@ import { callLLM } from "./utils";
 import { t } from './lang/helpers';
 import { updateFrontMatter } from './utils';
 
-export async function adjustMdMeta(app : App, settings: ExMemoSettings) {
-    const file = app.workspace.getActiveFile();
-    if (!file) {
-        new Notice(t('pleaseOpenFile'));
-        return;
+export async function adjustFileMeta(file:TFile, app: App, settings: ExMemoSettings,
+            force: boolean=false, showNotice: boolean=true, useLLM: boolean=true, debug: boolean=false) {
+    let hasChanges = false;
+    if (useLLM) {
+        hasChanges = await addMetaByLLM(file, app, settings, force, showNotice, debug);
     }
-    if (file.extension !== 'md') {
-        new Notice(t('currentFileNotMarkdown'));
-        return;
+
+    // 添加时间相关元数据 - 只在功能启用时执行
+    if (settings.metaEditTimeEnabled) {
+        try {
+            // 使用原生 JavaScript Date 对象
+            const now = new Date();
+            const formattedNow = formatDate(now, settings.metaEditTimeFormat);
+            updateFrontMatter(file, app, settings.metaUpdatedFieldName, formattedNow, 'update');
+            
+            // 添加创建时间
+            const created = new Date(file.stat.ctime);
+            const createdDate = formatDate(created, 'YYYY-MM-DD');
+            updateFrontMatter(file, app, settings.metaCreatedFieldName, createdDate, 'update');
+            
+            hasChanges = true;
+        } catch (error) {
+            console.error('Update time failed:', error);
+            new Notice(t('llmError') + ': ' + error);
+        }
     }
-    const force = settings.metaUpdateMethod === 'force';
-    addMetaByLLM(file, app, settings, force);
-    addOthersMeta(file, app);
+
+    // 添加自定义元数据
+    if (settings.customMetadata && settings.customMetadata.length > 0) {
+        for (const meta of settings.customMetadata) {
+            if (meta.key && meta.value) {
+                let finalValue: string | boolean = meta.value;
+                if (meta.value.toLowerCase() === 'true' || meta.value.toLowerCase() === 'false') {
+                    finalValue = (meta.value.toLowerCase() === 'true') as boolean;
+                }
+                updateFrontMatter(file, app, meta.key, finalValue, force ? 'update' : 'keep');
+            }
+        }
+        hasChanges = true;
+    }    
+
+    if (hasChanges && showNotice) {
+        new Notice(t('metaUpdated'));
+    }
 }
 
-async function addMetaByLLM(file:TFile, app: App, settings: ExMemoSettings, force: boolean=false) {
-    const fm = app.metadataCache.getFileCache(file);
-    if (fm?.frontmatter?.tags && fm?.frontmatter.description && !force) {
-        console.warn(t('fileAlreadyContainsTagsAndDescription'));
-        return;
-    }
-    let content_str = '';
-    if (settings.metaIsTruncate) {
-        content_str = await getContent(app, null, settings.metaMaxTokens, settings.metaTruncateMethod);
-    } else {
-        content_str = await getContent(app, null, -1, '');
-    }
-    const option_list = settings.tags;
-    const options = option_list.join(',');
-    const req = `Please extract up to three tags based on the following article content and generate a brief summary.
-The tags should be chosen from the following options: '${options}'. If there are no suitable tags, please create appropriate ones.
-${settings.metaDescription}
-Please return in the following format: {"tags":"tag1,tag2,tag3","description":"brief summary"}, and in the same language as the content.
-The article content is as follows:
-
-${content_str}`;
+export async function getReq(file: TFile, app: App, settings: ExMemoSettings, force: boolean = false) {
+    const content_str = await getContent(app, file, settings);
+    const fm = app.metadataCache.getFileCache(file)?.frontmatter;
     
-    let ret = await callLLM(req, settings);
+    // 构建基础请求内容
+    let reqParts = [];
+    let jsonParts = [];
+    
+    // 只有在需要生成标签时才添加标签相关内容
+    if (force || !fm?.[settings.metaTagsFieldName] || fm[settings.metaTagsFieldName].length === 0) {
+        const tag_options = settings.tags.join(',');
+        reqParts.push(`1. Tags: ${settings.metaTagsPrompt}\n   Available tags: ${tag_options}. Feel free to create new ones if none are suitable.`);
+        jsonParts.push(`"tags": "tag1,tag2,tag3"`);
+    }
+
+    // 添加其他元数据要求
+    let categories_options = settings.categories.join(',') || t('categoryUnknown');
+    reqParts.push(`${reqParts.length + 1}. Category: ${settings.metaCategoryPrompt}\n   Available categories: ${categories_options}. Must choose ONE from the available categories.`);
+    jsonParts.push(`"category": "category_name"`);
+
+    reqParts.push(`${reqParts.length + 1}. Description: ${settings.metaDescription}`);
+    jsonParts.push(`"description": "brief summary"`);
+
+    if (settings.metaTitleEnabled) {
+        reqParts.push(`${reqParts.length + 1}. Title: ${settings.metaTitlePrompt}`);
+        jsonParts.push(`"title": "article title"`);
+    }
+
+    const req = `I need to generate metadata for the following article. Requirements:\n\n` +
+        reqParts.join('\n\n') +
+        `\n\nPlease return in the following JSON format:\n{\n    ${jsonParts.join(',\n    ')}\n}\n\n` +
+        `File path: ${file.path}\n\nThe article content is as follows:\n\n${content_str}`;
+
+    return req;
+}
+
+async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings, 
+            force: boolean=false, showNotice: boolean=true, debug: boolean=false) {
+    const fm = app.metadataCache.getFileCache(file);
+    let frontMatter = fm?.frontmatter || {};
+        
+    // 添加标签、类别、描述和标题
+    if (!frontMatter[settings.metaTagsFieldName] || 
+        frontMatter[settings.metaTagsFieldName]?.length === 0 ||
+        !frontMatter[settings.metaDescriptionFieldName] || 
+        frontMatter[settings.metaDescriptionFieldName]?.trim() === '' ||
+        (settings.metaTitleEnabled && 
+            (!frontMatter[settings.metaTitleFieldName] || 
+                frontMatter[settings.metaTitleFieldName]?.trim() === '')) ||
+        (settings.metaCategoryEnabled && 
+            (!frontMatter[settings.metaCategoryFieldName] || 
+                frontMatter[settings.metaCategoryFieldName]?.trim() === '')) ||
+        force) {
+    } else {
+        console.warn(t('fileAlreadyContainsTagsAndDescription'));
+        return false;
+    }
+
+    const req = await getReq(file, app, settings, force);
+    let ret = await callLLM(req, settings, showNotice);
+    if (debug) {
+        //console.log('content_str', content_str);
+        //console.log('req', req);
+        console.log('callLLM ret:', ret);
+    }
+
     if (ret === "" || ret === undefined || ret === null) {
-        return;
+        return false;
     }
     ret = ret.replace(/`/g, '');
 
-    let ret_json = {} as { tags?: string; description?: string };
+    let ret_json = {} as { tags?: string; category?: string; description?: string; title?: string };
     try {
-        let json_str = ret.match(/{.*}/s);
+        let json_str = ret.match(/{[^]*}/);
         if (json_str) {
-            ret_json = JSON.parse(json_str[0]) as { tags?: string; description?: string };
+            ret_json = JSON.parse(json_str[0]) as { tags?: string; category?: string; description?: string; title?: string };
         }        
     } catch (error) {
         new Notice(t('parseError') + "\n" + error);
         console.error("parseError:", error);
-        return;
+        return false;
     }
+    
+    // 检查并更新各个字段
     if (ret_json.tags) {
         const tags = ret_json.tags.split(',');
-        updateFrontMatter(file, app, 'tags', tags, 'append');
+        updateFrontMatter(file, app, settings.metaTagsFieldName, tags, 'append');
     }
+    
+    if (ret_json.category && settings.metaCategoryEnabled) {
+        const currentValue = frontMatter[settings.metaCategoryFieldName];
+        const isEmpty = !currentValue || currentValue.trim() === '';
+        updateFrontMatter(file, app, settings.metaCategoryFieldName, ret_json.category, 
+            force || isEmpty ? 'update' : 'keep');
+    }
+
     if (ret_json.description) {
-        updateFrontMatter(file, app, 'description', ret_json.description, 'update');
+        const currentValue = frontMatter[settings.metaDescriptionFieldName];
+        const isEmpty = !currentValue || currentValue.trim() === '';
+        updateFrontMatter(file, app, settings.metaDescriptionFieldName, ret_json.description, 
+            force || isEmpty ? 'update' : 'keep');
     }
+
+    if (settings.metaTitleEnabled && ret_json.title) {
+        let title = ret_json.title.trim();
+        if ((title.startsWith('"') && title.endsWith('"')) || 
+            (title.startsWith("'") && title.endsWith("'"))) {
+            title = title.substring(1, title.length - 1);
+        }
+        const currentValue = frontMatter[settings.metaTitleFieldName];
+        const isEmpty = !currentValue || currentValue.trim() === '';
+        updateFrontMatter(file, app, settings.metaTitleFieldName, title, 
+            force || isEmpty ? 'update' : 'keep');
+    }
+    return true;
 }
 
-function addOthersMeta(file:TFile, app: App) {
-    const created = file.stat.ctime;
-    const createdDate = new Date(created).toISOString().split('T')[0];
-    const updated = file.stat.mtime;
-    const updatedDate = new Date(updated).toISOString().split('T')[0];
-    updateFrontMatter(file, app, 'created', createdDate, 'keep');
-    updateFrontMatter(file, app, 'updated', updatedDate, 'update');
-    updateFrontMatter(file, app, 'title', file.basename, 'keep');
+// 使用自定义的日期格式化函数
+function formatDate(date: Date, format: string): string {
+    // 简单的格式化实现，支持基本的 YYYY-MM-DD HH:mm:ss 格式
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    
+    return format
+        .replace('YYYY', year.toString())
+        .replace('MM', month)
+        .replace('DD', day)
+        .replace('HH', hours)
+        .replace('mm', minutes)
+        .replace('ss', seconds);
 }
-
-
-
-
