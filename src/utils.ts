@@ -26,6 +26,7 @@ export async function callLLM(req: string, settings: ExMemoSettings, showNotice:
         if (completion.choices.length > 0) {
             ret = completion.choices[0].message['content'] || ret;
         }
+        //console.log('LLM:', completion.usage)
     } catch (error) {
         new Notice(t("llmError") + "\n" + error as string);
         console.warn('Error:', error as string);
@@ -128,7 +129,9 @@ export async function simplifyTokens(allTags: string[], app: App, settings: ExMe
 
     const prompt = t("simplifyTagsPrompt").replace("{count}", MAX_TAGS_COUNT.toString());
     const result = await callLLM(prompt + "\n\n" + allTags.join('\n'), settings, true);    
+    // console.log('result', result);
     if (!result) {
+        new Notice(t("llmError"));
         return null;
     }
 

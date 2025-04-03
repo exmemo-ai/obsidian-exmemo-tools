@@ -65,8 +65,8 @@ Following text: ${truncatedAfter}`;
 
     const prompt = "Complete current sentence or generate a sentence (less than 50 words), based on the context:";
     
-    console.log('Prompt:', prompt);
-    console.log('Context:', context);
+    //console.log('Prompt:', prompt);
+    //console.log('Context:', context);
     try {
         // 添加加载动画
         const loadingChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];

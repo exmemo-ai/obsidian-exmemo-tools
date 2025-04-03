@@ -24,7 +24,7 @@ export default {
     "modelName": "模型名称",
 
     // 元数据更新设置
-    "metaSetting": "元数据",
+    "metaSetting": "生成元数据",
     "metaSettingDesc": "自动生成文件的元数据",
     "metaUpdateSetting": "更新元数据",
     "updateMetaOptions": "更新选项",
@@ -121,14 +121,14 @@ export default {
     "exmemoAdjustMeta": "生成元数据",
     "exmemoSelectFolder": "为当前文件选择合适的目录",
     "exmemoInsertMd": "将选中的文本插入到 markdown 合适位置",
-    "exmemoLLMAssistant": "智能编辑助手",
-    'exmemoGenerateNext': '生成下一句',
+    "exmemoLLMAssistant": "智能编辑",
+    'exmemoGenerateNext': '续写下一句',
 
     // LLM 助手设置
     "llmAssistantSetting": "智能编辑",
     "llmAssistantSettingDesc": "支持 LLM 对话、内容编辑和续写",
     "llmAssistantDialogEdit": "提示词是否可编辑",
-    "llmAssistantDialogEditDesc": "是否允许编辑之前保存的提示词，如果允许，需要通过按钮来触发对话",
+    "llmAssistantDialogEditDesc": "是否允许编辑之前保存的提示词；如果允许，则需要通过按钮来触发对话",
 
     // 文件迁移
     "allFolders": "全部目录",
@@ -157,8 +157,8 @@ export default {
     "continue": "继续",
     "processing": "处理中",
     "estimatedTokens": "预计消耗 {tokens} token，是否用模型提取信息？",
-    "skip": "跳过",
-    "createIndex": "ExMemo生成索引",
+    "skip": "跳过 LLM 提取",
+    "createIndex": "ExMemo生成目录索引",
     "fileList": "文件列表",
     "fileDetail": "文件详情",
     "noDescription": "暂无",
@@ -168,12 +168,12 @@ export default {
     "processCompleteWithIndex": "已完成处理 {count} 个文件并生成 {dirs} 个目录索引",
 
     // 生成索引设置
-    "indexFileSetting": "索引文件",
+    "indexFileSetting": "生成索引文件",
     "indexFileSettingDesc": "为目录生成索引文件，并总结目录内容",
     "defaultIndexString": "索引文件名",
     "defaultIndexStringDesc": "索引文件名开头的默认字符串",
     "indexExclude": "排除的文件夹或文件",
-    "indexExcludeDesc": "指定不需要建立的文件夹或文件，包含指定关键字的文件或目录将被排除。使用 * 作为通配符，并用逗号分隔。",
+    "indexExcludeDesc": "指定不需要建立索引的文件夹或文件，包含指定关键字的文件或目录将被排除。使用 * 作为通配符，并用逗号分隔。",
     "foundDirsNeedIndex": "{dirs} 个目录需要建立索引。",
 
     // 提示词管理器

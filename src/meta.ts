@@ -46,7 +46,7 @@ export async function adjustFileMeta(file:TFile, app: App, settings: ExMemoSetti
         hasChanges = true;
     }    
 
-    if (hasChanges) {
+    if (hasChanges && showNotice) {
         new Notice(t('metaUpdated'));
     }
 }

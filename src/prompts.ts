@@ -4,7 +4,7 @@ import { t } from './lang/helpers';
 interface PromptItem {
     count: number;
     lastAccess: number;
-    priority: number;  // 新增优先级字段
+    priority: number | null;
 }
 
 interface PromptList {
@@ -25,6 +25,26 @@ export function sortPromptsByPriority(prompts: Record<string, PromptItem>, a: st
         return itemB.count - itemA.count;
     }
     return itemB.lastAccess - itemA.lastAccess;
+}
+
+export async function addPrompt(plugin: any, prompt: string, count: number = 0) {
+    let prompts = plugin.settings.llmPrompts;
+    const currentTime = Date.now();
+    
+    if (prompts[prompt]) {
+        prompts[prompt].count += 1;
+        prompts[prompt].lastAccess = currentTime;
+    } else {
+        prompts[prompt] = {
+            count: count,
+            lastAccess: currentTime,
+            priority: null
+        };
+    }
+    
+    plugin.settings.llmPrompts = prompts;
+    await plugin.saveSettings();
+    return prompts[prompt];
 }
 
 export class PromptModal extends Modal {
@@ -79,8 +99,8 @@ export class PromptModal extends Modal {
 
             promptEl.addEventListener('dragend', async () => {
                 promptEl.removeClass('dragging');
+                await this.updatePriorities();
                 this.draggedItem = null;
-                await this.updatePriorities(); // 拖拽结束后更新优先级
             });
 
             promptEl.addEventListener('dragover', (e) => {
@@ -111,13 +131,26 @@ export class PromptModal extends Modal {
     private async updatePriorities() {
         const container = this.contentEl.querySelector('.prompts-container');
         const items = container?.querySelectorAll('.prompt-item');
-        if (!items) return;
+        if (!items || !this.draggedItem) return;
 
-        // 遍历所有项，更新优先级
+        // 找到被拖动项的新位置
+        let draggedIndex = -1;
+        items.forEach((item, index) => {
+            if (item === this.draggedItem) {
+                draggedIndex = index;
+            }
+        });
+
+        if (draggedIndex === -1) return;
+
+        // console.log("Dragged index:", draggedIndex);
+
         items.forEach((item, index) => {
             const promptText = item.querySelector('.setting-item-name')?.textContent;
             if (promptText && this.prompts[promptText]) {
-                this.prompts[promptText].priority = index;
+                if (index <= draggedIndex || ('priority' in this.prompts[promptText] && this.prompts[promptText].priority !== null)) {
+                    this.prompts[promptText].priority = index;
+                }
             }
         });
 
@@ -140,19 +173,8 @@ export class PromptModal extends Modal {
                 .onClick(async () => {
                     const newPrompt = promptInput.value.trim();
                     if (newPrompt) {
-                        // 找到相同 count(0) 的最小 priority
-                        const minPriority = Math.min(
-                            ...Object.values(this.prompts)
-                                .filter(p => p.count === 0)
-                                .map(p => p.priority ?? 0)
-                        );
-                        
-                        this.prompts[newPrompt] = {
-                            count: 0,
-                            lastAccess: Date.now(),
-                            priority: Math.max(minPriority - 1, 0)
-                        };
-                        await this.savePrompts();
+                        await addPrompt(this.plugin, newPrompt);
+                        this.prompts = this.plugin.settings.llmPrompts;
                         this.renderPromptList(this.contentEl.querySelector('.prompts-container'));
                         modal.close();
                     }
@@ -195,6 +217,19 @@ export class PromptModal extends Modal {
     }
 
     private async savePrompts() {
+        this.prompts = Object.fromEntries(
+            Object.entries(this.prompts).sort(([a, aData], [b, bData]) => {
+                const priorityA = aData.priority ?? Number.MAX_SAFE_INTEGER;
+                const priorityB = bData.priority ?? Number.MAX_SAFE_INTEGER;
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
+                }
+                if (aData.count !== bData.count) {
+                    return bData.count - aData.count;
+                }
+                return bData.lastAccess - aData.lastAccess;
+            })
+        );
         this.plugin.settings.llmPrompts = this.prompts;
         await this.plugin.saveSettings();
     }

@@ -4,6 +4,7 @@ import { callLLM } from "./utils";
 import ExMemoToolsPlugin from "./main";
 import { t } from "./lang/helpers";
 import { sortPromptsByPriority } from "./prompts";
+import { addPrompt } from "./prompts";
 
 function getSelection(app: App) {
     const editor = app.workspace.getActiveViewOfType(MarkdownView)?.editor;
@@ -13,7 +14,7 @@ function getSelection(app: App) {
     return editor.getSelection();
 }
 
-function filterKey(prompts: Record<string, { count: number, lastAccess: number, priority: number }>, query: string) {
+function filterKey(prompts: Record<string, { count: number, lastAccess: number, priority: number|null }>, query: string) {
     let result = query ? 
         Object.fromEntries(
             Object.entries(prompts).filter(([key]) => key.includes(query))
@@ -123,27 +124,8 @@ ${text}`;
     editor.replaceSelection(
         text + "\n\n" + ret + "\n"
     );
-    let prompts = settings.llmPrompts;
-    const currentTime = Date.now();
     
-    if (prompts[prompt]) {
-        prompts[prompt].count += 1;
-        prompts[prompt].lastAccess = currentTime;
-    } else {
-        const minPriority = Math.min(
-            ...Object.values(prompts)
-                .filter(p => p.count === 0)
-                .map(p => p.priority ?? 0)
-        );
-        
-        prompts[prompt] = {
-            count: 1,
-            lastAccess: currentTime,
-            priority: Math.max(minPriority - 1, 0)
-        };
-    }
-    settings.llmPrompts = prompts;
-    plugin.saveSettings();
+    await addPrompt(plugin, prompt, 1);
 }
 
 export async function llmAssistant(app: App, plugin: ExMemoToolsPlugin) {

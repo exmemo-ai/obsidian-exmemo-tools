@@ -10,7 +10,7 @@ function wildcardToRegex(wildcard: string) {
     return new RegExp(regex);
 }
 
-function shouldExcludeFile(file: TFile, settings: ExMemoSettings): boolean {
+function shouldExclude(file: TFile|TFolder, settings: ExMemoSettings): boolean {
     if (!settings.indexExclude) return false;
     
     const excludeList = settings.indexExclude.split(',').map(s => s.trim()).filter(s => s !== '');
@@ -63,9 +63,9 @@ class CancellableNotice extends Notice {
     }
 }
 
-function checkFileInfo(file: TFile, app: App) {
+function checkFileInfo(file: TFile, app: App, needTags: boolean = true): boolean {
     const fm = app.metadataCache.getFileCache(file);
-    if (fm?.frontmatter?.tags && fm?.frontmatter.description) {
+    if ((!needTags && fm?.frontmatter?.description) || (needTags && fm?.frontmatter?.tags && fm?.frontmatter?.description)) {
         return true;
     } else {
         return false;
@@ -102,13 +102,17 @@ async function getDirIndexFile(dir: TFolder, app: App, settings: ExMemoSettings,
 
 export async function optDir(dir: any, app: App, settings: ExMemoSettings): Promise<void> {
     // 统计文件和目录
+    const debug = false;
     const files = app.vault.getMarkdownFiles()
         .filter(file => file.path.startsWith(dir.path+'/'))
-        .filter(file => !shouldExcludeFile(file, settings));
+        .filter(file => !shouldExclude(file, settings));
     
     let dirs = app.vault.getAllLoadedFiles()
-        .filter(f => f.path.startsWith(dir.path+'/')
-            && f instanceof TFolder) as TFolder[];
+        .filter(f => (f.path.startsWith(dir.path+'/')
+            || f.path === dir.path)
+            && f instanceof TFolder
+            && !shouldExclude(f, settings)
+        ) as TFolder[];
     
     // 按照路径深度排序
     dirs.sort((a, b) => {
@@ -118,44 +122,54 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
     });
 
     let total = 0;
-    let count = 0;
+    let fileCount = 0;
+    let estimatedTokens = 0;
+
     for (const file of files) {
         const hasInfo = checkFileInfo(file, app);
         const isIndex = isIndexFile(file, settings);
         total += 1;
         if (!hasInfo && !isIndex) {
-            count += 1;
+            fileCount += 1;
+            const req = await getReq(file, app, settings);
+            const tokens = splitIntoTokens(req);
+            estimatedTokens += tokens.length + 100;
+            if (debug) console.log(file.path, 'tokens:', tokens.length, "+100");
         }
     }
-    const dirCount = dirs.length + 1; // +1 为当前目录
-    //console.log('total:', total, 'count:', count, 'dirs:', dirCount);
+    if (debug) console.log('total file:', total, 'file need llm:', fileCount, 'dirs:', dirs.length);
 
-    // 构建确认消息
-    let confirmMessage = '';
-    if (count > 0) {
-        confirmMessage += t('foundFilesNeedProcess')
-            .replace('{total}', total.toString())
-            .replace('{count}', count.toString()) + '\n\n';
-    }
-    confirmMessage += t('foundDirsNeedIndex').replace('{dirs}', dirCount.toString());
-
-    if (count > 0) {
-        let estimatedTokens = 0;
-        for (const file of files) {
-            if (!checkFileInfo(file, app)) {
-                const req = await getReq(file, app, settings);
-                const tokens = splitIntoTokens(req);
-                estimatedTokens += tokens.length + 100;
+    let dirCount = 0;
+    if (dirs.length > 0) {
+        for (const d of dirs) {
+            const indexFile = await getDirIndexFile(d, app, settings);
+            if (indexFile) {
+                const hasInfo = checkFileInfo(indexFile, app, false);
+                if (!hasInfo) {
+                    dirCount += 1;
+                }
             }
         }
-        // 加入生成索引的预计token
+        if (debug) console.log('+ dir * 1000', dirCount * 1000);
         estimatedTokens += dirCount * 1000;
-        confirmMessage += '\n\n' + t('estimatedTokens')
-            .replace('{tokens}', Math.ceil(estimatedTokens).toString());
     }
 
-    // 确认对话框
-    const shouldExtract = await confirmDialog(app, confirmMessage, t("extract"), t("skip"));
+    let shouldExtract: boolean | undefined = false;
+    if (estimatedTokens > 0) {
+        let confirmMessage = '';
+        if (fileCount > 0) {
+            confirmMessage += t('foundFilesNeedProcess')
+                .replace('{total}', total.toString())
+                .replace('{count}', fileCount.toString()) + '\n\n';
+        }
+        if (dirCount > 0) {
+            confirmMessage += t('foundDirsNeedIndex')
+                .replace('{dirs}', dirCount.toString()) + '\n\n';
+        }
+        confirmMessage += t('estimatedTokens')
+            .replace('{tokens}', Math.ceil(estimatedTokens).toString());
+        shouldExtract = await confirmDialog(app, confirmMessage, t("extract"), t("skip"));
+    }
 
     if (shouldExtract === undefined) {
         new Notice(t('processCancelled'));
@@ -163,8 +177,8 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
     }
 
     // 处理文件
-    if (count > 0 && shouldExtract) {
-        const notice = new CancellableNotice(`${t('processingFiles')}: 0/${count}`);
+    if (fileCount > 0 && shouldExtract) {
+        const notice = new CancellableNotice(`${t('processingFiles')}: 0/${fileCount}`);
         let processed = 0;
 
         for (const file of files) {
@@ -179,7 +193,7 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
                 await adjustFileMeta(file, app, settings, false, false, true, true);
                 await waitForMetadataCache(app, file);
                 processed++;
-                notice.updateMessage(`${t('processingFiles')}: ${processed}/${count}`);
+                notice.updateMessage(`${t('processingFiles')}: ${processed}/${fileCount}`);
             }
         }
         notice.hide();        
@@ -190,30 +204,25 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
     const indexNotice = new CancellableNotice(`${t('generatingIndex')}: 0/${dirCount}`);
     let indexProcessed = 0;
 
-    // 处理子目录
+    // 处理所有目录（包括子目录和当前目录）
     for (const d of dirs) {
         if (indexNotice.cancelled) {
             new Notice(t('processCancelled'));
             indexNotice.hide();
             return;
         }
-        if (d instanceof TFolder) {
-            await writeIndex(d, app, settings, shouldExtract);
-            indexProcessed++;
-            indexNotice.updateMessage(`${t('generatingIndex')}: ${indexProcessed}/${dirCount}`);
+        let idxFile = await writeIndex(d, app, settings, shouldExtract);
+        if (shouldExtract && idxFile) {
+            await waitForMetadataCache(app, idxFile);
         }
-    }
-
-    // 处理当前目录
-    if (!indexNotice.cancelled) {
-        await writeIndex(dir, app, settings, shouldExtract);
         indexProcessed++;
         indexNotice.updateMessage(`${t('generatingIndex')}: ${indexProcessed}/${dirCount}`);
-        indexNotice.hide();
-        new Notice(t('processCompleteWithIndex')
-            .replace('{count}', shouldExtract ? count.toString() : '0')
-            .replace('{dirs}', indexProcessed.toString()));
     }
+
+    indexNotice.hide();
+    new Notice(t('processCompleteWithIndex')
+        .replace('{count}', shouldExtract ? fileCount.toString() : '0')
+        .replace('{dirs}', indexProcessed.toString()));
 }
 
 interface DirEntry {
@@ -251,7 +260,7 @@ async function writeIndex(dir: any, app: App, settings: ExMemoSettings, useLLM: 
     // Collect and sort file information
     let files = app.vault.getMarkdownFiles()
         .filter(file => file.parent === dir)
-        .filter(file => !shouldExcludeFile(file, settings))
+        .filter(file => !shouldExclude(file, settings))
         .filter(file => !isIndexFile(file, settings));
     files.sort((a, b) => a.basename.localeCompare(b.basename));
 
@@ -279,7 +288,7 @@ async function writeIndex(dir: any, app: App, settings: ExMemoSettings, useLLM: 
     let abstractFile = await getDirIndexFile(dir, app, settings);
     if (!abstractFile || !(abstractFile instanceof TFile)) {
         console.log('failed to get file');
-        return;
+        return null;
     }
 
     // 4. Update tags
@@ -320,6 +329,7 @@ async function writeIndex(dir: any, app: App, settings: ExMemoSettings, useLLM: 
     // 7. Save file and generate description
     await app.vault.modify(abstractFile, content);
     await adjustFileMeta(abstractFile, app, settings, false, false, useLLM, false);
+    return abstractFile;
 }
 
 
