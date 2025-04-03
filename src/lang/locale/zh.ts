@@ -58,7 +58,7 @@ export default {
     "tagsFieldName": "标签字段名",
     "tagsFieldNameDesc": "自动生成标签使用的字段名 (默认: tags)",
     "simplifyTagsConfirm": "当前标签列表包含 {count} 个tokens，是否需要使用AI自动精简？",
-    "simplifyTagsPrompt": "请将以下标签列表精简到{count}个以内最重要的标签，保持原有格式，每行一个标签：",
+    "simplifyTagsPrompt": "请将以下标签列表精简到{count}个以内最重要的标签，保持原有格式，不返回其它内容，标签列表如下：",
 
     // 描述设置
     "description": "描述",

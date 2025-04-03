@@ -129,7 +129,6 @@ export async function simplifyTokens(allTags: string[], app: App, settings: ExMe
 
     const prompt = t("simplifyTagsPrompt").replace("{count}", MAX_TAGS_COUNT.toString());
     const result = await callLLM(prompt + "\n\n" + allTags.join('\n'), settings, true);    
-    // console.log('result', result);
     if (!result) {
         new Notice(t("llmError"));
         return null;
@@ -166,7 +165,7 @@ export async function loadTags(app: App, settings: ExMemoSettings): Promise<Reco
         if (simplifiedTags) {
             const newTagsMap: Record<string, number> = {};
             simplifiedTags.forEach(tag => {
-                newTagsMap[tag] = tagsMap[tag] || 1;
+                newTagsMap[tag] = tagsMap[tag] || 3;
             });
             return newTagsMap;
         }

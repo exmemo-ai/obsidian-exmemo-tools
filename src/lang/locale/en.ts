@@ -58,7 +58,7 @@ export default {
   "tagsFieldName": "Tags field name",
   "tagsFieldNameDesc": "Field name used for automatically generating tags (default: tags)",
   "simplifyTagsConfirm": "The current tag list contains {count} tokens, do you want to use AI to simplify it?",
-  "simplifyTagsPrompt": "Please simplify the following tag list to {count} or fewer most important tags, keep the original format with one tag per line:",
+  "simplifyTagsPrompt": "Please simplify the following tag list to within {count} most important tags, keeping the original format and not returning any other content. The tag list is as follows:",
 
   // Description Settings
   "description": "Description",
