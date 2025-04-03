@@ -109,7 +109,10 @@ export class ExMemoSettingTab extends PluginSettingTab {
 	private addMetadataSettings(): void {
 		// 元数据设置部分
 		const llmContainer = this.containerEl.createEl('div');
-		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
+		const collapseEl = llmContainer.createEl('details', { 
+			cls: 'setting-item-collapse',
+			attr: { id: 'meta-settings-collapse' }
+		});
 		collapseEl.createEl('summary', { text: t("metaSetting") });
 		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
 		descEl.setText(t("metaSettingDesc"));
@@ -437,7 +440,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 
 		// 添加自定义元数据设置
 		const customMetaCollapseEl = collapseEl.createEl('details', {
-			cls: 'setting-item-collapse nested-settings'
+			cls: 'setting-item-collapse nested-settings',
+			attr: { id: 'custom-meta-collapse' }
 		});
 		customMetaCollapseEl.createEl('summary', { text: t("customMetadata") });
 
@@ -453,7 +457,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 						value: ''
 					});
 					await this.plugin.saveSettings();
-					this.display();
+					this.refresh();
 				}));
 
 		interface CustomMetadata {
@@ -482,8 +486,31 @@ export class ExMemoSettingTab extends PluginSettingTab {
 					.onClick(async () => {
 						this.plugin.settings.customMetadata.splice(index, 1);
 						await this.plugin.saveSettings();
-						this.display();
+						this.refresh();
 					}));
+		});
+	}
+
+	private refresh(): void {
+		// 记住所有折叠面板的展开状态
+		const newMetaDetails = document.getElementById('meta-settings-collapse') as HTMLDetailsElement;
+		const newCustomMetaDetails = document.getElementById('custom-meta-collapse') as HTMLDetailsElement;
+		const metaDetailsOpen = newMetaDetails?.open;
+		const customMetaDetailsOpen = newCustomMetaDetails?.open;
+		
+		this.display();
+		
+		// 使用ID恢复折叠面板的状态
+		requestAnimationFrame(() => {
+			const newMetaDetails = document.getElementById('meta-settings-collapse') as HTMLDetailsElement;
+			const newCustomMetaDetails = document.getElementById('custom-meta-collapse') as HTMLDetailsElement;
+			
+			if (metaDetailsOpen && newMetaDetails) {
+				newMetaDetails.open = true;
+			}
+			if (customMetaDetailsOpen && newCustomMetaDetails) {
+				newCustomMetaDetails.open = true;
+			}
 		});
 	}
 
