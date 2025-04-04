@@ -201,7 +201,7 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
     }
 
     // 处理目录索引
-    const indexNotice = new CancellableNotice(`${t('generatingIndex')}: 0/${dirCount}`);
+    const indexNotice = new CancellableNotice(`${t('generatingIndex')}: 0/${dirs.length}`);
     let indexProcessed = 0;
 
     // 处理所有目录（包括子目录和当前目录）
@@ -216,7 +216,7 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
             await waitForMetadataCache(app, idxFile);
         }
         indexProcessed++;
-        indexNotice.updateMessage(`${t('generatingIndex')}: ${indexProcessed}/${dirCount}`);
+        indexNotice.updateMessage(`${t('generatingIndex')}: ${indexProcessed}/${dirs.length}`);
     }
 
     indexNotice.hide();

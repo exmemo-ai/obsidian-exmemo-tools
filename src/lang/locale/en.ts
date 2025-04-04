@@ -175,7 +175,7 @@ export default {
   'defaultIndexStringDesc': "Default string at the beginning of the index file name",
   'indexExclude': 'Excluded folders or files',
   'indexExcludeDesc': 'Specify the folders or files that do not need to be created. Files or directories containing the specified keywords will be excluded. Use * as a wildcard and separate them with commas.',
-  'foundDirsNeedIndex': "{dirs} directories that need indexing.",
+  'foundDirsNeedIndex': "{dirs} directories that need to extract information.",
 
   // Prompt Manager
   "promptManager": "Prompt Manager",

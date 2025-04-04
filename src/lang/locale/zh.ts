@@ -163,8 +163,8 @@ export default {
     "fileDetail": "文件详情",
     "noDescription": "暂无",
     "moc": "目录",
-    "processingFiles": "处理文件中",
-    "generatingIndex": "生成索引中",
+    "processingFiles": "处理文件",
+    "generatingIndex": "生成索引",
     "processCompleteWithIndex": "已完成处理 {count} 个文件并生成 {dirs} 个目录索引",
 
     // 生成索引设置
@@ -174,7 +174,7 @@ export default {
     "defaultIndexStringDesc": "索引文件名开头的默认字符串",
     "indexExclude": "排除的文件夹或文件",
     "indexExcludeDesc": "指定不需要建立索引的文件夹或文件，包含指定关键字的文件或目录将被排除。使用 * 作为通配符，并用逗号分隔。",
-    "foundDirsNeedIndex": "{dirs} 个目录需要建立索引。",
+    "foundDirsNeedIndex": "{dirs} 个目录需要提取信息。",
 
     // 提示词管理器
     "promptManager": "提示词管理",
