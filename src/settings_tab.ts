@@ -533,16 +533,26 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(collapseEl)
-			.setName(t("indexExclude"))
-			.setDesc(t("indexExcludeDesc"))
+			.setName(t("indexExcludeFile"))
+			.setDesc(t("indexExcludeFileDesc"))
 			.addText(text => text
-				.setPlaceholder('dir1, *_xxx.md default is null')
-				.setValue(this.plugin.settings.indexExclude)
+				.setPlaceholder('xxx.md, *_yyy.md default is null')
+				.setValue(this.plugin.settings.indexExcludeFile)
 				.onChange(async (value) => {
-					this.plugin.settings.indexExclude = value;
+					this.plugin.settings.indexExcludeFile = value;
 					await this.plugin.saveSettings();
 				}));
 
+		new Setting(collapseEl)
+			.setName(t("indexExcludeDir"))
+			.setDesc(t("indexExcludeDirDesc"))
+			.addText(text => text
+				.setPlaceholder('xxx, *_yyy default is null')
+				.setValue(this.plugin.settings.indexExcludeDir)
+				.onChange(async (value) => {
+					this.plugin.settings.indexExcludeDir = value;
+					await this.plugin.saveSettings();
+				}));				
 	}
 
 	private addDonationSettings(): void {

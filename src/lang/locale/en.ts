@@ -173,8 +173,10 @@ export default {
   "indexFileSettingDesc": "Generate index file for the directory and summarize the directory content",
   'defaultIndexString': "Index file name",
   'defaultIndexStringDesc': "Default string at the beginning of the index file name",
-  'indexExclude': 'Excluded folders or files',
-  'indexExcludeDesc': 'Specify the folders or files that do not need to be created. Files or directories containing the specified keywords will be excluded. Use * as a wildcard and separate them with commas.',
+  'indexExcludeFile': "Excluded files",
+  'indexExcludeFileDesc': "Specify files that do not need to be indexed. Files containing specified keywords will be excluded. Use * as a wildcard and separate with commas.",
+  'indexExcludeDir': "Excluded directories",
+  'indexExcludeDirDesc': "Specify directories that do not need to be indexed. Directories containing specified keywords will be excluded. Use * as a wildcard and separate with commas.",
   'foundDirsNeedIndex': "{dirs} directories that need to extract information.",
 
   // Prompt Manager
