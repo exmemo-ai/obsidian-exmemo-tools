@@ -25,10 +25,11 @@ function shouldExclude(file: TFile|TFolder, settings: ExMemoSettings): boolean {
 
 class CancellableNotice extends Notice {
     cancelled = false;
-    messageEl: HTMLElement | null = null;
+    private _messageEl: HTMLElement;
     
     constructor(message: string) {
         super('', 0);
+        this._messageEl = document.createElement('div');
         setTimeout(() => {
             const noticeEl = this.noticeEl;
             if (noticeEl) {
@@ -38,10 +39,9 @@ class CancellableNotice extends Notice {
                 noticeEl.style.gap = '8px';
                 noticeEl.style.padding = '8px';
 
-                this.messageEl = document.createElement('div');
-                this.messageEl.textContent = message;
-                this.messageEl.style.textAlign = 'center';
-                noticeEl.appendChild(this.messageEl);
+                this._messageEl.textContent = message;
+                this._messageEl.style.textAlign = 'center';
+                noticeEl.appendChild(this._messageEl);
 
                 const cancelButton = document.createElement('button');
                 cancelButton.textContent = t('cancel');
@@ -57,9 +57,7 @@ class CancellableNotice extends Notice {
     }
 
     updateMessage(message: string) {
-        if (this.messageEl) {
-            this.messageEl.textContent = message;
-        }
+        this._messageEl.textContent = message;
     }
 }
 
