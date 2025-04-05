@@ -174,7 +174,7 @@ export default {
   'defaultIndexString': "Index file name",
   'defaultIndexStringDesc': "Default string at the beginning of the index file name",
   'indexExcludeFile': "Excluded files",
-  'indexExcludeFileDesc': "Specify files that do not need to be indexed. Files containing specified keywords will be excluded. Use * as a wildcard and separate with commas.",
+  'indexExcludeFileDesc': "Specify files that do not need to generate meta information. Files containing specified keywords will be excluded. Use * as a wildcard and separate with commas.",
   'indexExcludeDir': "Excluded directories",
   'indexExcludeDirDesc': "Specify directories that do not need to be indexed. Directories containing specified keywords will be excluded. Use * as a wildcard and separate with commas.",
   'foundDirsNeedIndex': "{dirs} directories that need to extract information.",

@@ -173,7 +173,7 @@ export default {
     "defaultIndexString": "索引文件名",
     "defaultIndexStringDesc": "索引文件名开头的默认字符串",
     "indexExcludeFile": "排除的文件",
-    "indexExcludeFileDesc": "指定不需要建立索引的文件，包含指定关键字的文件将被排除。使用 * 作为通配符，并用逗号分隔。",
+    "indexExcludeFileDesc": "指定不需要生成Meta信息的文件，包含指定关键字的文件将被排除。使用 * 作为通配符，并用逗号分隔。",
     "indexExcludeDir": "排除的目录",
     "indexExcludeDirDesc": "指定不需要建立索引的目录，包含指定关键字的目录将被排除。使用 * 作为通配符，并用逗号分隔。",
     "foundDirsNeedIndex": "{dirs} 个目录需要提取信息。",
