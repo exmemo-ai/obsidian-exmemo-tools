@@ -29,7 +29,8 @@ export interface ExMemoSettings {
 	metaCategoryPrompt: string;
 	metaCategoryEnabled: boolean;
 	defaultIndexString: string;
-	indexExclude: string;
+	indexExcludeFile: string;
+	indexExcludeDir: string;
 }
 
 export const DEFAULT_SETTINGS: ExMemoSettings = {
@@ -61,5 +62,6 @@ export const DEFAULT_SETTINGS: ExMemoSettings = {
 	metaCategoryPrompt: t('defaultCategoryPrompt'),
 	metaCategoryEnabled: true,
 	defaultIndexString: 'index_',
-	indexExclude: ''
+	indexExcludeFile: '',
+	indexExcludeDir: '',
 }

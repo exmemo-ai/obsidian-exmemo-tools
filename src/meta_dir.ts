@@ -10,10 +10,10 @@ function wildcardToRegex(wildcard: string) {
     return new RegExp(regex);
 }
 
-function shouldExclude(file: TFile|TFolder, settings: ExMemoSettings): boolean {
-    if (!settings.indexExclude) return false;
+function shouldExclude(file: TFile|TFolder, exclude: string|null): boolean {
+    if (!exclude) return false;
     
-    const excludeList = settings.indexExclude.split(',').map(s => s.trim()).filter(s => s !== '');
+    const excludeList = exclude.split(',').map(s => s.trim()).filter(s => s !== '');
     for (const excludePath of excludeList) {
         const regex = wildcardToRegex(excludePath);
         if (regex.test(file.path)) {
@@ -103,13 +103,13 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
     const debug = false;
     const files = app.vault.getMarkdownFiles()
         .filter(file => file.path.startsWith(dir.path+'/'))
-        .filter(file => !shouldExclude(file, settings));
+        .filter(file => !shouldExclude(file, settings.indexExcludeFile));
     
     let dirs = app.vault.getAllLoadedFiles()
         .filter(f => (f.path.startsWith(dir.path+'/')
             || f.path === dir.path)
             && f instanceof TFolder
-            && !shouldExclude(f, settings)
+            && !shouldExclude(f, settings.indexExcludeDir)
         ) as TFolder[];
     
     // 按照路径深度排序
@@ -201,7 +201,7 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
     }
 
     // 处理目录索引
-    const indexNotice = new CancellableNotice(`${t('generatingIndex')}: 0/${dirCount}`);
+    const indexNotice = new CancellableNotice(`${t('generatingIndex')}: 0/${dirs.length}`);
     let indexProcessed = 0;
 
     // 处理所有目录（包括子目录和当前目录）
@@ -216,7 +216,7 @@ export async function optDir(dir: any, app: App, settings: ExMemoSettings): Prom
             await waitForMetadataCache(app, idxFile);
         }
         indexProcessed++;
-        indexNotice.updateMessage(`${t('generatingIndex')}: ${indexProcessed}/${dirCount}`);
+        indexNotice.updateMessage(`${t('generatingIndex')}: ${indexProcessed}/${dirs.length}`);
     }
 
     indexNotice.hide();
@@ -260,7 +260,7 @@ async function writeIndex(dir: any, app: App, settings: ExMemoSettings, useLLM: 
     // Collect and sort file information
     let files = app.vault.getMarkdownFiles()
         .filter(file => file.parent === dir)
-        .filter(file => !shouldExclude(file, settings))
+        //.filter(file => !shouldExclude(file, settings.indexExcludeFile))
         .filter(file => !isIndexFile(file, settings));
     files.sort((a, b) => a.basename.localeCompare(b.basename));
 
@@ -299,21 +299,24 @@ async function writeIndex(dir: any, app: App, settings: ExMemoSettings, useLLM: 
     // 5. Generate file list and detail content
     const fileList = entries.map(entry => {
         if (entry.isDir) {
+            const path = entry.indexFile ? entry.indexFile.path.replace(/ /g, '%20') : '';
             const link = entry.indexFile ? 
-                `- [${entry.name}](${entry.indexFile.path})` :
+                `- [${entry.name}](${path})` :
                 `- ${entry.name}`;
             return link;
         } else {
-            return `- [${entry.name}](${entry.path})`;
+            const path = entry.path.replace(/ /g, '%20');
+            return `- [${entry.name}](${path})`;
         }
     }).join('\n');
 
     const fileDetail = entries.map(entry => {
+        const path = entry.isDir && entry.indexFile ? entry.indexFile.path.replace(/ /g, '%20') : entry.path;
         const link = entry.isDir && entry.indexFile ?
-            `- [${entry.name}](${entry.indexFile.path})` :
+            `- [${entry.name}](${path})` :
             entry.isDir ?
                 `- ${entry.name}` :
-                `- [${entry.name}](${entry.path})`;
+                `- [${entry.name}](${path})`;
         return `${link}\n  - ${entry.description}`;
     }).join('\n');
 

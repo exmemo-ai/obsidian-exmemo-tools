@@ -1,4 +1,4 @@
-import { App, MarkdownView } from 'obsidian';
+import { App, MarkdownView, EditorPosition } from 'obsidian';
 import { ExMemoSettings } from './settings';
 import { callLLM } from './utils';
 
@@ -8,46 +8,57 @@ export async function generateNextSentence(app: App, settings: ExMemoSettings) {
 
     const editor = activeView.editor;
     const cursor = editor.getCursor();
-    const currentLine = editor.getLine(cursor.line);
+    const selection = editor.getSelection();
     
-    // 获取光标前后的文本
-    const beforeLines: string[] = [];
-    const afterLines: string[] = [];
+    let beforeLines: string[] = [];
+    let afterLines: string[] = [];
+    let insertPos: EditorPosition;
     
-    // 获取前2行内容，包括空行
-    for (let i = Math.max(0, cursor.line - 2); i < cursor.line; i++) {
-        const line = editor.getLine(i);
-        if (line.trim()) {
-            beforeLines.push(line);
+    if (selection) {
+        // 使用选区作为上下文
+        beforeLines = [selection];
+        insertPos = editor.getCursor('to'); // 获取选区结束位置
+    } else {
+        // 原有的光标位置逻辑
+        const currentLine = editor.getLine(cursor.line);
+        
+        // 获取前2行内容，包括空行
+        for (let i = Math.max(0, cursor.line - 2); i < cursor.line; i++) {
+            const line = editor.getLine(i);
+            if (line.trim()) {
+                beforeLines.push(line);
+            }
         }
-    }
-    // 添加当前行光标之前的内容
-    const currentLinePrefix = currentLine.substring(0, cursor.ch);
-    if (currentLinePrefix.trim()) {
-        beforeLines.push(currentLinePrefix);
-    }
-    
-    // 添加当前行光标之后的内容
-    const currentLineSuffix = currentLine.substring(cursor.ch);
-    if (currentLineSuffix.trim()) {
-        afterLines.push(currentLineSuffix);
+        // 添加当前行光标之前的内容
+        const currentLinePrefix = currentLine.substring(0, cursor.ch);
+        if (currentLinePrefix.trim()) {
+            beforeLines.push(currentLinePrefix);
+        }
+        
+        // 添加当前行光标之后的内容
+        const currentLineSuffix = currentLine.substring(cursor.ch);
+        if (currentLineSuffix.trim()) {
+            afterLines.push(currentLineSuffix);
+        }
+
+        // 获取后2行内容
+        let afterLineCount = 0;
+        let currentLineNum = cursor.line + 1;
+        
+        while (currentLineNum < editor.lineCount() && afterLineCount < 2) {
+            const nextLine = editor.getLine(currentLineNum);
+            if (nextLine.trim()) {
+                afterLines.push(nextLine);
+                afterLineCount++;
+            }
+            currentLineNum++;
+        }
+        
+        insertPos = cursor;
     }
 
-    // 获取后2行内容，包括空行
-    let afterLineCount = 0;
-    let currentLineNum = cursor.line + 1;
-    
-    while (currentLineNum < editor.lineCount() && afterLineCount < 2) {
-        const nextLine = editor.getLine(currentLineNum);
-        if (nextLine.trim()) {
-            afterLines.push(nextLine);
-            afterLineCount++;
-        }
-        currentLineNum++;
-    }
-
-    const BEFORE_TEXT_LIMIT = 100
-    const AFTER_TEXT_LIMIT = 100
+    const BEFORE_TEXT_LIMIT = 100;
+    const AFTER_TEXT_LIMIT = 100;
 
     const beforeText = beforeLines.join(' ').trim();
     const afterText = afterLines.join(' ').trim();
@@ -68,13 +79,9 @@ Following text: ${truncatedAfter}`;
     //console.log('Prompt:', prompt);
     //console.log('Context:', context);
     try {
-        // 添加加载动画
         const loadingChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
         let loadingIndex = 0;
-        const loadingPos = {
-            line: cursor.line,
-            ch: cursor.ch
-        };
+        const loadingPos = insertPos;
 
         // 插入一个空格作为动画占位符
         editor.replaceRange(' ', loadingPos, loadingPos);
@@ -104,8 +111,8 @@ Following text: ${truncatedAfter}`;
         
         // 计算结束位置并选中内容
         const to = {
-            line: cursor.line,
-            ch: cursor.ch + nextSentence.length
+            line: insertPos.line,
+            ch: insertPos.ch + nextSentence.length
         };
         editor.setSelection(from, to);
     } catch (error) {
