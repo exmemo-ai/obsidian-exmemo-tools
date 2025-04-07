@@ -189,4 +189,15 @@ export default {
     "managePrompts": "管理提示词",
     "managePromptsDesc": "提示词管理器，支持添加、删除和编辑提示词",
     "openPromptManager": "打开提示词管理器",
+
+    // 封面图设置
+    "coverImage": "封面图",
+    "enableCover": "启用封面图",
+    "enableCoverDesc": "为笔记添加封面图",
+    "coverFieldName": "封面图字段名",
+    "coverFieldNameDesc": "在frontmatter中使用的封面图字段名称",
+    "coverUrl": "默认封面图URL",
+    "coverUrlDesc": "当未找到图片时使用的默认封面图地址",
+    "useFirstImage": "使用第一张图片",
+    "useFirstImageDesc": "自动使用文章中的第一张图片作为封面图"    
 }

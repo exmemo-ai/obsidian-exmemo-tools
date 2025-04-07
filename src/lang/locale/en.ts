@@ -189,5 +189,16 @@ export default {
   "save": "Save",
   "managePrompts": "Manage Prompts",
   "managePromptsDesc": "Prompt manager for adding, deleting and editing prompts",
-  "openPromptManager": "Open Prompt Manager"
+  "openPromptManager": "Open Prompt Manager",
+
+  // Cover Image Settings
+  "coverImage": "Cover Image",
+  "enableCover": "Enable Cover Image",
+  "enableCoverDesc": "Add cover image to your notes",
+  "coverFieldName": "Cover Field Name",
+  "coverFieldNameDesc": "Field name used for cover image in frontmatter",
+  "coverUrl": "Default Cover URL",
+  "coverUrlDesc": "Default cover image URL to use when no image is found",
+  "useFirstImage": "Use First Image",
+  "useFirstImageDesc": "Automatically use the first image in the article as cover"
 }

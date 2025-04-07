@@ -384,6 +384,53 @@ export class ExMemoSettingTab extends PluginSettingTab {
 
 		titlePromptSetting.setDisabled(!this.plugin.settings.metaTitleEnabled);
 
+		// 封面图设置部分
+		const coverCollapseEl = collapseEl.createEl('details', {
+			cls: 'setting-item-collapse nested-settings'
+		});
+		coverCollapseEl.createEl('summary', { text: t("coverImage") });
+
+		new Setting(coverCollapseEl)
+			.setName(t('enableCover'))
+			.setDesc(t('enableCoverDesc'))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.metaCoverEnabled)
+				.onChange(async (value) => {
+					this.plugin.settings.metaCoverEnabled = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(coverCollapseEl)
+			.setName(t('coverFieldName'))
+			.setDesc(t('coverFieldNameDesc'))
+			.addText(text => text
+				.setValue(this.plugin.settings.metaCoverFieldName)
+				.onChange(async (value) => {
+					this.plugin.settings.metaCoverFieldName = value || 'cover';
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(coverCollapseEl)
+			.setName(t('coverUrl'))
+			.setDesc(t('coverUrlDesc'))
+			.addText(text => text
+				.setValue(this.plugin.settings.metaCoverUrl)
+				.onChange(async (value) => {
+					this.plugin.settings.metaCoverUrl = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(coverCollapseEl)
+			.setName(t('useFirstImage'))
+			.setDesc(t('useFirstImageDesc'))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.metaCoverUseFirst)
+				.onChange(async (value) => {
+					this.plugin.settings.metaCoverUseFirst = value;
+					await this.plugin.saveSettings();
+				}));
+
+
 		// 新增编辑时间设置部分
 		const timeCollapseEl = collapseEl.createEl('details', {
 			cls: 'setting-item-collapse nested-settings'
