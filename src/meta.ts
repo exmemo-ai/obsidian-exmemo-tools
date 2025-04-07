@@ -12,6 +12,11 @@ export async function adjustFileMeta(file:TFile, app: App, settings: ExMemoSetti
         hasChanges = await addMetaByLLM(file, app, settings, force, showNotice, debug);
     }
 
+    // 添加封面
+    if (await addCover(file, app, settings, force)) {
+        hasChanges = true;
+    }
+
     // 添加时间相关元数据 - 只在功能启用时执行
     if (settings.metaEditTimeEnabled) {
         try {
@@ -166,6 +171,33 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
             force || isEmpty ? 'update' : 'keep');
     }
     return true;
+}
+
+async function addCover(file: TFile, app: App, settings: ExMemoSettings, force: boolean=false): Promise<boolean> {
+    if (settings.metaCoverEnabled) {
+        const fm = app.metadataCache.getFileCache(file);
+        let frontMatter = fm?.frontmatter || {};    
+        const currentValue = frontMatter[settings.metaCoverFieldName];
+        const isEmpty = !currentValue || currentValue.trim() === '';
+        
+        if (force || isEmpty) {
+            let coverUrl = settings.metaCoverUrl;
+            
+            if (settings.metaCoverUseFirst) {
+                const content = await app.vault.read(file);
+                const firstImage = content.match(/!\[.*?\]\((.*?)\)/);
+                if (firstImage && firstImage[1]) {
+                    coverUrl = firstImage[1];
+                }
+            }
+            
+            if (coverUrl) {
+                updateFrontMatter(file, app, settings.metaCoverFieldName, coverUrl, 'update');
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 // 使用自定义的日期格式化函数

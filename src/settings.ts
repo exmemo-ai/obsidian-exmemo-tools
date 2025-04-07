@@ -31,6 +31,10 @@ export interface ExMemoSettings {
 	defaultIndexString: string;
 	indexExcludeFile: string;
 	indexExcludeDir: string;
+	metaCoverEnabled: boolean;
+	metaCoverFieldName: string;
+	metaCoverUrl: string;
+	metaCoverUseFirst: boolean;
 }
 
 export const DEFAULT_SETTINGS: ExMemoSettings = {
@@ -64,4 +68,8 @@ export const DEFAULT_SETTINGS: ExMemoSettings = {
 	defaultIndexString: 'index_',
 	indexExcludeFile: '',
 	indexExcludeDir: '',
+	metaCoverEnabled: false,
+	metaCoverFieldName: 'cover',
+	metaCoverUrl: '',
+	metaCoverUseFirst: false,
 }

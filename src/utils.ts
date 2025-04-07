@@ -285,12 +285,12 @@ export function updateFrontMatter(file: TFile, app: App, key: string, value: any
         if (method === `append`) {
             let old_value = frontmatter[key];
             if (typeof value === 'string') {
-                if (old_value === undefined) {
+                if (old_value === undefined || old_value === null) {
                     old_value = '';
                 }
                 frontmatter[key] = old_value + value;
             } else if (Array.isArray(value)) {
-                if (old_value === undefined) {
+                if (old_value === undefined || old_value === null || !Array.isArray(old_value)) {
                     old_value = [];
                 }
                 const new_value = old_value.concat(value);
@@ -301,7 +301,7 @@ export function updateFrontMatter(file: TFile, app: App, key: string, value: any
             frontmatter[key] = value;
         } else { // keep: keep_if_exists
             let old_value = frontmatter[key];
-            if (old_value !== undefined) {
+            if (old_value !== undefined && old_value !== null) {
                 return;
             }
             frontmatter[key] = value;
