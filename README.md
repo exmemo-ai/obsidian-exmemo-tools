@@ -4,6 +4,7 @@ English | [中文简体](https://github.com/exmemo-ai/obsidian-exmemo-tools/blob
 
 ExMemo Tools is an Obsidian plugin powered by large language models (LLM), offering intelligent document management and content optimization features.
 
+Watch the video：
 [![Watch the video](https://img.youtube.com/vi/5naS9p8a1IE/hqdefault.jpg)](https://www.youtube.com/watch?v=5naS9p8a1IE)
 
 ## Main Features

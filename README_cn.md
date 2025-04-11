@@ -2,6 +2,7 @@
 
 ExMemo Tools 是一款基于大语言模型（LLM）的 Obsidian 插件，提供智能文档管理和内容优化功能，包含：自动生成元数据、为文件选择位置，使用模型编辑和续写内容等功能。
 
+B站_使用方法视频：
 [![B站_使用方法视频](./images/video.png)](https://www.bilibili.com/video/BV1podNYvEod)
 
 ## 主要功能
