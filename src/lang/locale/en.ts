@@ -22,6 +22,17 @@ export default {
   "apiKey": "API key",
   "baseUrl": "Base URL",
   "modelName": "Model name",
+  "testLlmConnection": "Test LLM Connection",
+  "testLlmConnectionDesc": "Test whether the current LLM configuration can connect normally",
+  "testConnection": "Test Connection",
+  "testing": "Testing...",
+  "connectionSuccess": "Connection successful! LLM service is working properly",
+  "connectionFailed": "Connection failed",
+  "connectionError": "Connection error",
+  "apiKeyEmpty": "API Key cannot be empty",
+  "modelNameEmpty": "Model name cannot be empty",
+  "connectionTestPrompt": "Please reply 'Connection test successful' and nothing else.",
+  "apiResponseEmpty": "API connection failed or no response received",
 
   // Meta Update Settings
   "metaSetting": "Meta",
@@ -95,6 +106,9 @@ export default {
   "addField": "Add field",
   "fieldKey": "Field name",
   "fieldValue": "Field value",
+  "staticValue": "Static",
+  "promptValue": "Prompt",
+  "fieldPrompt": "Field generation prompt",
 
   // Category Settings
   "categoryOptions": "Category",
@@ -129,6 +143,16 @@ export default {
   "llmAssistantSettingDesc": "Supports LLM dialogue, content editing, and continuation",
   "llmAssistantDialogEdit": "Is the prompt editable?",
   "llmAssistantDialogEditDesc": "Whether to allow editing of previously saved prompts. If allowed, please trigger the dialog through the button",
+
+  // LLM Result Handling
+  "appendToSelection": "Append after selection",
+  "prependToSelection": "Prepend before selection",
+  "replaceSelection": "Replace selection",
+  "rememberChoice": "Remember this choice",
+  "resultMode": "Result handling mode",
+  "resultModeDesc": "Choose how to handle LLM results",
+  "askEachTime": "Ask each time",
+  "chooseAction": "Please choose an action",
 
   // file migrations
   "allFolders": "All folders",
@@ -178,6 +202,9 @@ export default {
   'indexExcludeDir': "Excluded directories",
   'indexExcludeDirDesc': "Specify directories that do not need to be indexed. Directories containing specified keywords will be excluded. Use * as a wildcard and separate with commas.",
   'foundDirsNeedIndex': "{dirs} directories that need to extract information.",
+  'failedToCreateIndex': "Failed to create index file",
+  'indexCreated': "Index created at {path}",
+  'noFilesToProcess': "No files to process",
 
   // Prompt Manager
   "promptManager": "Prompt Manager",
@@ -185,11 +212,16 @@ export default {
   "addNewPrompt": "Add New Prompt",
   "enterPrompt": "Enter prompt",
   "editPrompt": "Edit Prompt",
+  "clearPrompts": "Clear Prompt",
+  "resetPrompt": "Reset Prompt",
   "useCount": "Usage count",
   "save": "Save",
   "managePrompts": "Manage Prompts",
   "managePromptsDesc": "Prompt manager for adding, deleting and editing prompts",
   "openPromptManager": "Open Prompt Manager",
+  "clearPromptsConfirmation": "Clear Prompts Confirmation",
+  "clearPromptsWarning": "Clearing prompts will delete all custom prompts, do you want to continue?",
+  "clear": "Clear",
 
   // Cover Image Settings
   "coverImage": "Cover Image",
@@ -200,5 +232,20 @@ export default {
   "coverUrl": "Default Cover URL",
   "coverUrlDesc": "Default cover image URL to use when no image is found",
   "useFirstImage": "Use First Image",
-  "useFirstImageDesc": "Automatically use the first image in the article as cover"
+  "useFirstImageDesc": "Automatically use the first image in the article as cover",
+
+  // Import/Export Settings
+  "importExportSettings": "Import/Export Settings",
+  "importExportSettingsDesc": "Import or export plugin settings",
+  "exportSettings": "Export Settings",
+  "exportSettingsDesc": "Export current settings to a JSON file",
+  "importSettings": "Import Settings",
+  "importSettingsDesc": "Import settings from a JSON file",
+  "export": "Export",
+  "import": "Import",
+  "settingsExported": "Settings exported",
+  "settingsImported": "Settings imported",
+  "invalidSettingsFile": "Invalid settings file",
+  "importSettingsWarning": "Importing will overwrite all current ExMemo Tools settings. Continue?",
+  "confirmationRequired": "Confirmation Required",
 }

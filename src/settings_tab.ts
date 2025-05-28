@@ -1,7 +1,9 @@
-import { PluginSettingTab, Setting, App, TextAreaComponent, Notice } from 'obsidian';
+import { PluginSettingTab, Setting, App, TextAreaComponent, Notice, Modal } from 'obsidian';
 import { PromptModal } from './prompts';
-import { loadTags } from "./utils";
+import { loadTags, confirmDialog } from "./utils";
 import { t } from "./lang/helpers";
+import { testLlmConnection } from './llm_utils';
+import { LLMResultMode } from "./settings";
 
 export class ExMemoSettingTab extends PluginSettingTab {
 	plugin;
@@ -20,6 +22,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		this.addFolderSettings();
 		this.addMetadataSettings();
 		this.addIndexFileSettings();
+		this.addImportExportSettings();
 		this.addDonationSettings();
 	}
 
@@ -53,7 +56,34 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.llmModelName = value;
 					await this.plugin.saveSettings();
-				}));
+					}));
+		
+		new Setting(this.containerEl)
+			.setName(t("testLlmConnection"))
+			.setDesc(t("testLlmConnectionDesc"))
+			.addButton((button) => {
+				button
+					.setButtonText(t("testConnection"))
+					.setCta()
+					.onClick(async () => {
+						button.setButtonText(t("testing"));
+						button.setDisabled(true);
+						
+						try {
+							const result = await testLlmConnection(this.plugin.settings);
+							if (result.success) {
+								new Notice(t("connectionSuccess"));
+							} else {
+								new Notice(t("connectionFailed") + ": " + result.error, 5000);
+							}
+						} catch (error) {
+							new Notice(t("connectionError") + ": " + error.message, 5000);
+						} finally {
+							button.setButtonText(t("testConnection"));
+							button.setDisabled(false);
+						}
+					});
+			});
 	}
 
 	private addLLMSettings(): void {
@@ -70,6 +100,22 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				toggle.setValue(this.plugin.settings.llmDialogEdit)
 					.onChange(async (value) => {
 						this.plugin.settings.llmDialogEdit = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(collapseEl)
+			.setName(t("resultMode"))
+			.setDesc(t("resultModeDesc"))
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption(LLMResultMode.UNKNOWN, t("askEachTime"))
+					.addOption(LLMResultMode.APPEND, t("appendToSelection"))
+					.addOption(LLMResultMode.PREPEND, t("prependToSelection"))
+					.addOption(LLMResultMode.REPLACE, t("replaceSelection"))
+					.setValue(this.plugin.settings.llmResultMode)
+					.onChange(async (value) => {
+						this.plugin.settings.llmResultMode = value;
 						await this.plugin.saveSettings();
 					});
 			});
@@ -501,7 +547,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				.onClick(async () => {
 					this.plugin.settings.customMetadata.push({
 						key: '',
-						value: ''
+						value: '',
+						type: 'static'
 					});
 					await this.plugin.saveSettings();
 					this.refresh();
@@ -510,32 +557,46 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		interface CustomMetadata {
 			key: string;
 			value: string;
+			type?: string;
 		}
 
 		this.plugin.settings.customMetadata.forEach((meta: CustomMetadata, index: number) => {
-			new Setting(customMetaCollapseEl)
-				.addText(text => text
-					.setPlaceholder(t('fieldKey'))
-					.setValue(meta.key)
+			const settingContainer = new Setting(customMetaCollapseEl);
+			
+			settingContainer.addText(text => text
+				.setPlaceholder(t('fieldKey'))
+				.setValue(meta.key)
+				.onChange(async (value) => {
+					this.plugin.settings.customMetadata[index].key = value;
+					await this.plugin.saveSettings();
+				}));
+			
+				settingContainer.addDropdown(dropdown => dropdown
+					.addOption('static', t('staticValue'))
+					.addOption('prompt', t('promptValue'))
+					.setValue(meta.type || 'static')
 					.onChange(async (value) => {
-						this.plugin.settings.customMetadata[index].key = value;
+						this.plugin.settings.customMetadata[index].type = value;
 						await this.plugin.saveSettings();
-					}))
-				.addText(text => text
-					.setPlaceholder(t('fieldValue'))
+					}));
+				
+				settingContainer.addText(text => text
+					.setPlaceholder(meta.type === 'prompt' ? t('fieldPrompt') : t('fieldValue'))
 					.setValue(meta.value)
 					.onChange(async (value) => {
 						this.plugin.settings.customMetadata[index].value = value;
 						await this.plugin.saveSettings();
-					}))
-				.addButton(button => button
+						//this.refresh();
+					}));
+				
+				settingContainer.addButton(button => button
 					.setIcon('trash')
 					.onClick(async () => {
 						this.plugin.settings.customMetadata.splice(index, 1);
 						await this.plugin.saveSettings();
 						this.refresh();
 					}));
-		});
+			});
 	}
 
 	private refresh(): void {
@@ -600,6 +661,80 @@ export class ExMemoSettingTab extends PluginSettingTab {
 					this.plugin.settings.indexExcludeDir = value;
 					await this.plugin.saveSettings();
 				}));				
+	}
+
+	private addImportExportSettings(): void {
+		const importExportContainer = this.containerEl.createEl('div');
+		const collapseEl = importExportContainer.createEl('details', { cls: 'setting-item-collapse' });
+		collapseEl.createEl('summary', { text: t("importExportSettings") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("importExportSettingsDesc"));
+
+		new Setting(collapseEl)
+			.setName(t("exportSettings"))
+			.setDesc(t("exportSettingsDesc"))
+			.addButton((button) => {
+				button.setButtonText(t("export"))
+					.setCta()
+					.onClick(() => {
+						const settingsJson = JSON.stringify(this.plugin.settings, null, 2);
+						const blob = new Blob([settingsJson], { type: "application/json" });
+						const url = URL.createObjectURL(blob);
+						
+						const a = document.createElement("a");
+						a.href = url;
+						a.download = `exmemo_tools_settings_${new Date().toISOString().split('T')[0]}.json`;
+						document.body.appendChild(a);
+						a.click();
+						
+						setTimeout(() => {
+							document.body.removeChild(a);
+							URL.revokeObjectURL(url);
+						}, 0);
+						
+						new Notice(t("settingsExported"));
+					});
+			});
+
+		new Setting(collapseEl)
+			.setName(t("importSettings"))
+			.setDesc(t("importSettingsDesc"))
+			.addButton((button) => {
+				button.setButtonText(t("import"))
+					.onClick(() => {
+						const fileInput = document.createElement("input");
+						fileInput.type = "file";
+						fileInput.accept = "application/json";
+						
+						fileInput.addEventListener("change", (e) => {
+							const target = e.target as HTMLInputElement;
+							const file = target.files?.[0];
+							
+							if (file) {
+								const reader = new FileReader();
+								reader.onload = async (e) => {
+									try {
+										const settingsJson = e.target?.result as string;
+										const settingsObj = JSON.parse(settingsJson);										
+										const confirm = await confirmDialog(this.app, t("importSettingsWarning"))
+										if (confirm) {
+											this.plugin.settings = Object.assign({}, this.plugin.settings, settingsObj);
+											await this.plugin.saveSettings();
+											this.display();
+											new Notice(t("settingsImported"));
+										}										
+									} catch (error) {
+										console.error(error);
+										new Notice(t("invalidSettingsFile"));
+									}
+								};
+								reader.readAsText(file);
+							}
+						});
+						
+						fileInput.click();
+					});
+			});
 	}
 
 	private addDonationSettings(): void {

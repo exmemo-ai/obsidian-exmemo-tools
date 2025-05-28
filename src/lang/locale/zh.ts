@@ -22,6 +22,17 @@ export default {
     "apiKey": "API Key",
     "baseUrl": "Base URL",
     "modelName": "模型名称",
+    "testLlmConnection": "测试 LLM 连接",
+    "testLlmConnectionDesc": "测试当前 LLM 配置是否能够正常连接",
+    "testConnection": "测试连接",
+    "testing": "测试中...",
+    "connectionSuccess": "连接成功！LLM 服务运行正常",
+    "connectionFailed": "连接失败",
+    "connectionError": "连接错误",
+    "apiKeyEmpty": "API Key不能为空",
+    "modelNameEmpty": "模型名称不能为空",
+    "connectionTestPrompt": "请回复'连接测试成功'，不要回复其他内容。",
+    "apiResponseEmpty": "API连接失败或未返回响应",
 
     // 元数据更新设置
     "metaSetting": "生成元数据",
@@ -95,6 +106,9 @@ export default {
     "addField": "添加字段",
     "fieldKey": "字段名",
     "fieldValue": "字段值",
+    "staticValue": "静态",
+    "promptValue": "提示词",
+    "fieldPrompt": "字段生成提示词",
 
     // 类别设置
     "categoryOptions": "类别",
@@ -129,6 +143,16 @@ export default {
     "llmAssistantSettingDesc": "支持 LLM 对话、内容编辑和续写",
     "llmAssistantDialogEdit": "提示词是否可编辑",
     "llmAssistantDialogEditDesc": "是否允许编辑之前保存的提示词；如果允许，则需要通过按钮来触发对话",
+
+    // LLM 结果处理
+    "appendToSelection": "添加到选区后",
+    "prependToSelection": "添加到选区前",
+    "replaceSelection": "替换选区",
+    "rememberChoice": "记住此选择",
+    "resultMode": "结果处理模式",
+    "resultModeDesc": "选择 LLM 结果的处理方式",
+    "askEachTime": "每次询问",
+    "chooseAction": "请选择操作",
 
     // 文件迁移
     "allFolders": "全部目录",
@@ -177,6 +201,9 @@ export default {
     "indexExcludeDir": "排除的目录",
     "indexExcludeDirDesc": "指定不需要建立索引的目录，包含指定关键字的目录将被排除。使用 * 作为通配符，并用逗号分隔。",
     "foundDirsNeedIndex": "{dirs} 个目录需要提取信息。",
+    'failedToCreateIndex': "无法创建索引",
+    'indexCreated': "创建索引：{path}",
+    'noFilesToProcess': "没有需要处理的文件",
 
     // 提示词管理器
     "promptManager": "提示词管理",
@@ -184,11 +211,16 @@ export default {
     "addNewPrompt": "添加新提示词",
     "enterPrompt": "请输入提示词",
     "editPrompt": "编辑提示词",
+    "clearPrompts": "清除提示词",
+    "resetPrompt": "重置提示词",
     "useCount": "使用次数",
     "save": "保存",
     "managePrompts": "管理提示词",
     "managePromptsDesc": "提示词管理器，支持添加、删除和编辑提示词",
     "openPromptManager": "打开提示词管理器",
+    "clearPromptsConfirmation": "清除提示词确认",
+    "clearPromptsWarning": "清除提示词将删除所有自定义提示词，是否继续？",
+    "clear": "清除",
 
     // 封面图设置
     "coverImage": "封面图",
@@ -199,5 +231,20 @@ export default {
     "coverUrl": "默认封面图URL",
     "coverUrlDesc": "当未找到图片时使用的默认封面图地址",
     "useFirstImage": "使用第一张图片",
-    "useFirstImageDesc": "自动使用文章中的第一张图片作为封面图"    
+    "useFirstImageDesc": "自动使用文章中的第一张图片作为封面图",
+
+    // 导入/导出设置
+    "importExportSettings": "导入/导出设置",
+    "importExportSettingsDesc": "导入或导出插件设置",
+    "exportSettings": "导出设置",
+    "exportSettingsDesc": "导出当前设置为 JSON 文件",
+    "importSettings": "导入设置",
+    "importSettingsDesc": "从 JSON 文件导入设置",
+    "export": "导出",
+    "import": "导入",
+    "settingsExported": "设置已导出",
+    "settingsImported": "设置已导入",
+    "invalidSettingsFile": "无效的设置文件",
+    "importSettingsWarning": "导入将覆盖当前所有ExMemo Tools的设置，是否继续？",
+    "confirmationRequired": "需要确认"
 }
