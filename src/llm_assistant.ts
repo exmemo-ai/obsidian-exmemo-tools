@@ -1,6 +1,6 @@
-import { App, MarkdownView, Notice, SuggestModal } from 'obsidian';
-import { ExMemoSettings } from "./settings";
-import { callLLM } from "./utils";
+import { App, MarkdownView, Notice, SuggestModal, Modal } from 'obsidian';
+import { ExMemoSettings, LLMResultMode } from "./settings";
+import { callLLM } from "./llm_utils";
 import ExMemoToolsPlugin from "./main";
 import { t } from "./lang/helpers";
 import { sortPromptsByPriority } from "./prompts";
@@ -107,9 +107,83 @@ class LLMEditModal extends LLMQuickModal {
     }
 }
 
+class LLMResultModal extends Modal {
+    plugin: ExMemoToolsPlugin;
+    text: string;
+    result: string;
+    remember: boolean = false;
+    
+    constructor(app: App, plugin: ExMemoToolsPlugin, text: string, result: string) {
+        super(app);
+        this.plugin = plugin;
+        this.text = text;
+        this.result = result;
+    }
+
+    onOpen() {
+        const { contentEl } = this;
+        contentEl.empty();
+        contentEl.addClass('llm-result-container');
+        
+        contentEl.createEl('h3', { text: t("chooseAction") });
+        
+        const buttonsDiv = contentEl.createDiv('llm-result-buttons');
+        buttonsDiv.addClass('llm-result-modal-buttons');
+        
+        const appendButton = buttonsDiv.createEl('button', { text: t("appendToSelection") });
+        appendButton.addEventListener('click', () => this.handleMode(LLMResultMode.APPEND));
+        
+        const prependButton = buttonsDiv.createEl('button', { text: t("prependToSelection") });
+        prependButton.addEventListener('click', () => this.handleMode(LLMResultMode.PREPEND));
+        
+        const replaceButton = buttonsDiv.createEl('button', { text: t("replaceSelection") });
+        replaceButton.addEventListener('click', () => this.handleMode(LLMResultMode.REPLACE));
+        
+        const rememberDiv = contentEl.createDiv('llm-mode-remember');
+        const checkbox = rememberDiv.createEl('input', { type: 'checkbox' });
+        checkbox.addEventListener('change', (e) => {
+            this.remember = (e.target as HTMLInputElement).checked;
+        });
+        rememberDiv.createSpan({ text: t("rememberChoice") });
+    }
+    
+    async handleMode(mode: LLMResultMode) {
+        const editor = this.app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+        if (!editor) return;
+        
+        applyLLMResult(editor, this.text, this.result, mode);
+        
+        if (this.remember) {
+            this.plugin.settings.llmResultMode = mode;
+            await this.plugin.saveSettings();
+        }
+        
+        this.close();
+    }
+
+    onClose() {
+        const { contentEl } = this;
+        contentEl.empty();
+    }
+}
+
+function applyLLMResult(editor: any, text: string, result: string, mode: LLMResultMode): void {
+    switch (mode) {
+        case LLMResultMode.APPEND:
+            editor.replaceSelection(text + "\n\n" + result + "\n");
+            break;
+        case LLMResultMode.PREPEND || LLMResultMode.UNKNOWN:
+            editor.replaceSelection(result + "\n\n" + text);
+            break;
+        case LLMResultMode.REPLACE:
+            editor.replaceSelection(result);
+            break;
+    }
+}
+
 async function chat(prompt: string, app: App, plugin: ExMemoToolsPlugin) {
     let settings: ExMemoSettings = plugin.settings;
-    let text = getSelection(this.app);
+    let text = getSelection(app);
     let req = `Prompt:
 ${prompt}
 
@@ -121,9 +195,12 @@ ${text}`;
     if (!editor) {
         return;
     }
-    editor.replaceSelection(
-        text + "\n\n" + ret + "\n"
-    );
+    
+    if (settings.llmResultMode !== LLMResultMode.UNKNOWN) {
+        applyLLMResult(editor, text, ret, settings.llmResultMode);
+    } else {
+        new LLMResultModal(app, plugin, text, ret).open();
+    }
     
     await addPrompt(plugin, prompt, 1);
 }
