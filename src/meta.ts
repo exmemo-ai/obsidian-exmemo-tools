@@ -1,7 +1,7 @@
 import { App, Notice, TFile } from 'obsidian';
 import { ExMemoSettings } from "./settings";
 import { getContent } from './utils';
-import { callLLM } from "./utils";
+import { callLLM } from "./llm_utils";
 import { t } from './lang/helpers';
 import { updateFrontMatter } from './utils';
 
@@ -41,11 +41,13 @@ export async function adjustFileMeta(file:TFile, app: App, settings: ExMemoSetti
     if (settings.customMetadata && settings.customMetadata.length > 0) {
         for (const meta of settings.customMetadata) {
             if (meta.key && meta.value) {
-                let finalValue: string | boolean = meta.value;
-                if (meta.value.toLowerCase() === 'true' || meta.value.toLowerCase() === 'false') {
-                    finalValue = (meta.value.toLowerCase() === 'true') as boolean;
+                if (meta.type !== 'prompt') {
+                    let finalValue: string | boolean = meta.value;
+                    if (meta.value.toLowerCase() === 'true' || meta.value.toLowerCase() === 'false') {
+                        finalValue = (meta.value.toLowerCase() === 'true') as boolean;
+                    }
+                    updateFrontMatter(file, app, meta.key, finalValue, force ? 'update' : 'keep');
                 }
-                updateFrontMatter(file, app, meta.key, finalValue, force ? 'update' : 'keep');
             }
         }
         hasChanges = true;
@@ -84,6 +86,15 @@ export async function getReq(file: TFile, app: App, settings: ExMemoSettings, fo
         jsonParts.push(`"title": "article title"`);
     }
 
+    if (settings.customMetadata && settings.customMetadata.length > 0) {
+        for (const meta of settings.customMetadata) {
+            if (meta.key && meta.value && meta.type === 'prompt') {
+                reqParts.push(`${reqParts.length + 1}. ${meta.key}: ${meta.value}`);
+                jsonParts.push(`"${meta.key}": "value for ${meta.key}"`);
+            }
+        }
+    }
+
     const req = `I need to generate metadata for the following article. Requirements:\n\n` +
         reqParts.join('\n\n') +
         `\n\nPlease return in the following JSON format:\n{\n    ${jsonParts.join(',\n    ')}\n}\n\n` +
@@ -108,6 +119,11 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
         (settings.metaCategoryEnabled && 
             (!frontMatter[settings.metaCategoryFieldName] || 
                 frontMatter[settings.metaCategoryFieldName]?.trim() === '')) ||
+        (settings.customMetadata && settings.customMetadata.some(meta => 
+            meta.type === 'prompt' && 
+            meta.key && 
+            (!frontMatter[meta.key] || 
+             (typeof frontMatter[meta.key] === 'string' && frontMatter[meta.key].trim() === '')))) ||
         force) {
     } else {
         console.warn(t('fileAlreadyContainsTagsAndDescription'));
@@ -127,11 +143,24 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
     }
     ret = ret.replace(/`/g, '');
 
-    let ret_json = {} as { tags?: string; category?: string; description?: string; title?: string };
+    let ret_json = {} as { tags?: string; category?: string; description?: string; title?: string; [key: string]: any };
     try {
         let json_str = ret.match(/{[^]*}/);
         if (json_str) {
-            ret_json = JSON.parse(json_str[0]) as { tags?: string; category?: string; description?: string; title?: string };
+            const parsedJson = JSON.parse(json_str[0]);
+            
+            for (const key in parsedJson) {
+                if (typeof parsedJson[key] === 'string') {
+                    const value = parsedJson[key].trim().toLowerCase();
+                    if (value === 'true') {
+                        parsedJson[key] = true;
+                    } else if (value === 'false') {
+                        parsedJson[key] = false;
+                    }
+                }
+            }
+            
+            ret_json = parsedJson as { tags?: string; category?: string; description?: string; title?: string; [key: string]: any };
         }        
     } catch (error) {
         new Notice(t('parseError') + "\n" + error);
@@ -170,6 +199,27 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
         updateFrontMatter(file, app, settings.metaTitleFieldName, title, 
             force || isEmpty ? 'update' : 'keep');
     }
+
+    if (settings.customMetadata && settings.customMetadata.length > 0) {
+        for (const meta of settings.customMetadata) {
+            if (meta.key && meta.value && meta.type === 'prompt' && ret_json[meta.key] !== undefined) {
+                let value = ret_json[meta.key];
+                
+                if (typeof value === 'string') {
+                    value = value.trim();
+                    if ((value.startsWith('"') && value.endsWith('"')) || 
+                        (value.startsWith("'") && value.endsWith("'"))) {
+                        value = value.substring(1, value.length - 1);
+                    }
+                }
+                
+                const currentValue = frontMatter[meta.key];
+                const isEmpty = !currentValue || (typeof currentValue === 'string' && currentValue.trim() === '');
+                updateFrontMatter(file, app, meta.key, value, force || isEmpty ? 'update' : 'keep');
+            }
+        }
+    }
+    
     return true;
 }
 
