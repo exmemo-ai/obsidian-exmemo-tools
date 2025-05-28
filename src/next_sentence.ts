@@ -1,6 +1,6 @@
 import { App, MarkdownView, EditorPosition } from 'obsidian';
 import { ExMemoSettings } from './settings';
-import { callLLM } from './utils';
+import { callLLM } from './llm_utils';
 
 export async function generateNextSentence(app: App, settings: ExMemoSettings) {
     const activeView = app.workspace.getActiveViewOfType(MarkdownView);

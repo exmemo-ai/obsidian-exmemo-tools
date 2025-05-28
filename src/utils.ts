@@ -1,41 +1,7 @@
 import { App, TFile, MarkdownView, Modal, Notice, getAllTags } from 'obsidian';
-import OpenAI from "openai";
 import { ExMemoSettings } from "./settings";
 import { t } from "./lang/helpers"
-
-export async function callLLM(req: string, settings: ExMemoSettings, showNotice: boolean = true): Promise<string> {
-    let ret = '';
-    let info = null;
-    if (showNotice) {
-        info = new Notice(t("llmLoading"), 0);
-    }
-    //console.log('callLLM:', req.length, 'chars', req);
-    //console.warn('callLLM:', settings.llmBaseUrl, settings.llmToken);
-    const openai = new OpenAI({
-        apiKey: settings.llmToken,
-        baseURL: settings.llmBaseUrl,
-        dangerouslyAllowBrowser: true
-    });
-    try {
-        const completion = await openai.chat.completions.create({
-            model: settings.llmModelName,
-            messages: [
-                { "role": "user", "content": req }
-            ]
-        });
-        if (completion.choices.length > 0) {
-            ret = completion.choices[0].message['content'] || ret;
-        }
-        //console.log('LLM:', completion.usage)
-    } catch (error) {
-        new Notice(t("llmError") + "\n" + error as string);
-        console.warn('Error:', error as string);
-    }
-    if (info) {
-        info.hide();
-    }
-    return ret
-}
+import { callLLM } from "./llm_utils";
 
 class ConfirmModal extends Modal {
     private resolvePromise: (value: boolean | undefined) => void;
