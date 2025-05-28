@@ -25,6 +25,8 @@ Watch the video：
 3. Optional: Customize description generation prompts
 4. Recommended: Enable "content truncation" for long documents to control API costs
 
+> Need more detailed setup guide? Check out the [Configuration Documentation](https://github.com/exmemo-ai/obsidian-exmemo-tools/blob/master//docs/configuration_cn.md)
+
 ### Core Features
 
 **Generate Metadata** (Ctrl+P > ExMemo Tools: Generate Metadata)

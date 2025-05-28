@@ -23,6 +23,8 @@ B站_使用方法视频：
 3. 可选：自定义描述生成的提示词
 4. 建议：对长文档启用"内容截断"以控制 API 调用成本
 
+> 需要更详细的设置指南？请查看[详细配置文档](https://github.com/exmemo-ai/obsidian-exmemo-tools/blob/master//docs/configuration_cn.md)
+
 ### 核心功能
 
 **生成元信息** (Ctrl+P > ExMemo Tools: 生成元数据)
