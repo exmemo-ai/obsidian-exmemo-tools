@@ -18,7 +18,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		this.addGeneralSettings();
-		this.addLLMSettings();
+		this.addAssistantSettings();
+		this.addTruncateSettings();
 		this.addFolderSettings();
 		this.addMetadataSettings();
 		this.addCardSettings();
@@ -28,19 +29,24 @@ export class ExMemoSettingTab extends PluginSettingTab {
 	}
 
 	private addGeneralSettings(): void {
-		// LLM 设置部分
-		new Setting(this.containerEl).setName(t("llmSettings"))
-			.setHeading();
-		new Setting(this.containerEl)
+		const llmContainer = this.containerEl.createEl('div');
+		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
+		collapseEl.createEl('summary', { text: t("llmSettings") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("llmSettingsDesc"));
+		
+		new Setting(collapseEl)
 			.setName(t("apiKey"))
 			.addText(text => text
 				.setPlaceholder('Enter your token')
-				.setValue(this.plugin.settings.llmToken)
+				.setValue(this.plugin.settings.llmToken ? '•'.repeat(Math.min(20, this.plugin.settings.llmToken.length)) : '')
 				.onChange(async (value) => {
-					this.plugin.settings.llmToken = value;
-					await this.plugin.saveSettings();
+					if (!value.match(/^[•]+$/)) {
+						this.plugin.settings.llmToken = value;
+						await this.plugin.saveSettings();
+					}
 				}));
-		new Setting(this.containerEl)
+		new Setting(collapseEl)
 			.setName(t("baseUrl"))
 			.addText(text => text
 				.setPlaceholder('https://api.openai.com/v1')
@@ -49,7 +55,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 					this.plugin.settings.llmBaseUrl = value;
 					await this.plugin.saveSettings();
 				}));
-		new Setting(this.containerEl)
+		new Setting(collapseEl)
 			.setName(t("modelName"))
 			.addText(text => text
 				.setPlaceholder('gpt-4o')
@@ -59,7 +65,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 					}));
 		
-		new Setting(this.containerEl)
+		new Setting(collapseEl)
 			.setName(t("testLlmConnection"))
 			.setDesc(t("testLlmConnectionDesc"))
 			.addButton((button) => {
@@ -87,7 +93,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 			});
 	}
 
-	private addLLMSettings(): void {
+	private addAssistantSettings(): void {
 		const llmContainer = this.containerEl.createEl('div');
 		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
 		collapseEl.createEl('summary', { text: t("llmAssistantSetting") });
@@ -153,36 +159,10 @@ export class ExMemoSettingTab extends PluginSettingTab {
 			});
 	}
 
-	private addMetadataSettings(): void {
-		// 元数据设置部分
-		const llmContainer = this.containerEl.createEl('div');
-		const collapseEl = llmContainer.createEl('details', { 
-			cls: 'setting-item-collapse',
-			attr: { id: 'meta-settings-collapse' }
-		});
-		collapseEl.createEl('summary', { text: t("metaSetting") });
-		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
-		descEl.setText(t("metaSettingDesc"));
-
-		// update meta settings
-		new Setting(collapseEl)
-			.setName(t("metaUpdateSetting"))
-			.setDesc(t("updateMetaOptionsDesc"))
-			.setClass("setting-item-indent1")
-			.addDropdown((dropdown) => {
-				dropdown
-					.addOption('force', t("updateForce"))
-					.addOption('no-llm', t("updateNoLLM"))
-					.setValue(this.plugin.settings.metaUpdateMethod)
-					.onChange(async (value) => {
-						this.plugin.settings.metaUpdateMethod = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// 创建截断设置的折叠面板
-		const truncateCollapseEl = collapseEl.createEl('details', {
-			cls: 'setting-item-collapse nested-settings'
+	private addTruncateSettings(): void {
+		const container = this.containerEl.createEl('div');
+		const truncateCollapseEl = container.createEl('details', {
+			cls: 'setting-item-collapse'
 		});
 		truncateCollapseEl.createEl('summary', { text: t("truncateSettings") });
 
@@ -230,6 +210,36 @@ export class ExMemoSettingTab extends PluginSettingTab {
 
 		// 初始化显示状态
 		truncateContainer.style.display = this.plugin.settings.metaIsTruncate ? 'block' : 'none';
+	}
+
+	private addMetadataSettings(): void {
+		// 元数据设置部分
+		const llmContainer = this.containerEl.createEl('div');
+		const collapseEl = llmContainer.createEl('details', { 
+			cls: 'setting-item-collapse',
+			attr: { id: 'meta-settings-collapse' }
+		});
+		collapseEl.createEl('summary', { text: t("metaSetting") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("metaSettingDesc"));
+
+		// update meta settings
+		new Setting(collapseEl)
+			.setName(t("metaUpdateSetting"))
+			.setDesc(t("updateMetaOptionsDesc"))
+			.setClass("setting-item-indent1")
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('force', t("updateForce"))
+					.addOption('no-llm', t("updateNoLLM"))
+					.setValue(this.plugin.settings.metaUpdateMethod)
+					.onChange(async (value) => {
+						this.plugin.settings.metaUpdateMethod = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+
 
 		// 描述设置部分
 		const descCollapseEl = collapseEl.createEl('details', {
@@ -719,7 +729,18 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.indexExcludeDir = value;
 					await this.plugin.saveSettings();
-				}));				
+				}));
+
+		new Setting(collapseEl)
+			.setName(t('indexFileDirectory'))
+			.setDesc(t('indexFileDirectoryDesc'))
+			.addText(text => text
+				.setPlaceholder('')
+				.setValue(this.plugin.settings.indexFileDirectory)
+				.onChange(async (value) => {
+					this.plugin.settings.indexFileDirectory = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 
 	private addImportExportSettings(): void {

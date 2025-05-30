@@ -1,7 +1,7 @@
 import { App, Editor, MarkdownView, Plugin, TFolder, Menu, Notice, TFile } from 'obsidian';
 import { DEFAULT_SETTINGS, ExMemoSettings } from './settings';
 import { ExMemoSettingTab } from './settings_tab';
-import { createDirIndex, updateFilesMetadata, createTempIndex } from './meta_dir';
+import { createDirIndex, updateFilesMetadata, createTempIndex, updateIndex } from './index_generator';
 import { isIndexFile } from './utils';
 import { adjustFileMeta } from './meta';
 import { insertToDir } from './select_folder';
@@ -131,10 +131,7 @@ export default class ExMemoToolsPlugin extends Plugin {
         }
         const force = settings.metaUpdateMethod === 'force';
         if (isIndexFile(file, settings)) {
-            const parent = app.vault.getAbstractFileByPath(file.path)?.parent;
-            if (parent instanceof TFolder) {
-                await createDirIndex(parent, app, settings);
-            }
+            await updateIndex(file, app, settings, true);
         } else {
             await adjustFileMeta(file, app, settings, force, true, true, false);
         }

@@ -3,6 +3,7 @@ import { ExMemoSettings } from "./settings";
 import { splitIntoTokens, updateFrontMatter, isIndexFile, updateContentBlock, confirmDialog } from './utils';
 import { adjustFileMeta, getReq } from './meta';
 import { t } from './lang/helpers';
+import { CardManager } from './zettelkasten';
 
 function wildcardToRegex(wildcard: string) {
     let regex = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
@@ -351,13 +352,37 @@ async function updateIndexFile(entries: DirEntry[], indexFile: TFile, app: App, 
         return `${link}\n  - ${entry.description}`;
     }).join('\n');
 
+    let cardsContent = '';
+    for (const entry of entries) {
+        if (!entry.isDir && entry.file) {
+            try {
+                const cardManager = new CardManager(app, entry.file, settings);
+                const cards = await cardManager.readExistingCards();
+                if (cards && cards.length > 0) {
+                    const path = entry.path.replace(/ /g, '%20');
+                    cardsContent += `- [${entry.name}](${path})\n`;
+                    cards.forEach(card => {
+                        cardsContent += card.format() + '\n\n';
+                    });
+                }
+            } catch (error) {
+                console.error(`Error reading cards from ${entry.path}:`, error);
+            }
+        }
+    }
+
     let content = await app.vault.read(indexFile);
     
     const fileListBlock = '## ' + t('fileList') + '\n' + fileList;
     content = updateContentBlock(content, t('fileList'), fileListBlock);
     
-    const fileDescBlock = '## ' + t('fileDetail') + '\n' + fileDetail;
-    content = updateContentBlock(content, t('fileDetail'), fileDescBlock);
+    const fileDetailBlock = '## ' + t('fileDetail') + '\n' + fileDetail;
+    content = updateContentBlock(content, t('fileDetail'), fileDetailBlock);
+
+    if (cardsContent.trim()) {
+        const cardsBlock = '## ' + t('cards') + '\n' + cardsContent;
+        content = updateContentBlock(content, t('cards'), cardsBlock);
+    }
 
     await app.vault.modify(indexFile, content);
     await adjustFileMeta(indexFile, app, settings, false, false, useLLM, false);
@@ -407,8 +432,26 @@ export async function createTempIndex(files: TFile[], app: App, settings: ExMemo
     }
     
     const tempIndexName = `${fileName}.md`;
-    const tempIndexPath = `${tempIndexName}`;
-    
+    let dir = settings.indexFileDirectory;
+    let tempIndexPath = ''
+    if (dir && dir !== '' && dir !== '/') {
+        dir = dir.replace(/\/$/, '');
+        
+        const folderExists = app.vault.getAbstractFileByPath(dir);
+        if (!folderExists) {
+            try {
+                await app.vault.createFolder(dir);
+            } catch (error) {
+                console.error('Error creating directory:', error);
+                return null;
+            }
+        }
+        
+        tempIndexPath = `${dir}/${tempIndexName}`;
+    } else {
+        tempIndexPath = `${tempIndexName}`;
+    }
+
     try {
         // Escape special characters in the query
         const escapedQuery = query ? query.replace(/"/g, '\\"') : '';
@@ -442,6 +485,34 @@ async function updateDirIndex(dir: TFolder, app: App, settings: ExMemoSettings, 
         console.log('failed to get file');
         return null;
     }
+    
+    const query = `"path:${dir.path}/"`;
+    updateFrontMatter(indexFile, app, 'query', query, 'update');
+    
     return await updateIndexFile(entries, indexFile, app, settings, useLLM);
 }
 
+export async function updateIndex(file: TFile, app: App, settings: ExMemoSettings, useLLM: boolean = true): Promise<TFile | null> {
+    const fm = app.metadataCache.getFileCache(file);
+    if (!fm || !fm.frontmatter || !fm.frontmatter.query) { // old index file without query
+        const parent = app.vault.getAbstractFileByPath(file.path)?.parent;
+        if (parent instanceof TFolder) {
+            await createDirIndex(parent, app, settings);
+        }    
+    } else {
+        let query = fm.frontmatter.query;
+        query = query.replace(/['"]/g, '');
+        if (query.startsWith('path:')) {
+            let dirPath = query.slice(5).trim();
+            if (dirPath.endsWith('/')) {
+                dirPath = dirPath.slice(0, -1);
+            }
+            const dir = app.vault.getAbstractFileByPath(dirPath);
+            if (dir instanceof TFolder) {
+                await createDirIndex(parent, app, settings);
+            }
+        } else {
+            new Notice(t('indexQueryNotSupported'));
+        }
+    }
+}

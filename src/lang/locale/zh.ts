@@ -19,6 +19,7 @@ export default {
 
     // LLM 设置
     "llmSettings": "LLM",
+    "llmSettingsDesc": "配置 LLM 服务的相关设置",
     "apiKey": "API Key",
     "baseUrl": "Base URL",
     "modelName": "模型名称",
@@ -47,7 +48,7 @@ export default {
     // 内容截断设置
     "truncateSettings": "内容截断",
     "truncateContent": "内容太长是否截断",
-    "truncateContentDesc": "使用LLM时，如果内容超过最大字数，是否截断",
+    "truncateContentDesc": "使用LLM时，如果文件内容超过最大字数，是否截断",
     "maxContentLength": "截断后最大内容长度",
     "maxContentLengthDesc": "设置内容的最大 token 限制",
     "truncateMethod": "截断方式",
@@ -196,7 +197,7 @@ export default {
 
     // 生成索引设置
     "indexFileSetting": "生成索引文件",
-    "indexFileSettingDesc": "为目录生成索引文件，并总结目录内容",
+    "indexFileSettingDesc": "为目录/搜索结果生成索引文件，并总结内容",
     "defaultIndexString": "索引文件名",
     "defaultIndexStringDesc": "索引文件名开头的默认字符串",
     "indexExcludeFile": "排除的文件",
@@ -207,7 +208,10 @@ export default {
     'failedToCreateIndex': "无法创建索引",
     'indexCreated': "创建索引：{path}",
     'noFilesToProcess': "没有需要处理的文件",
-
+    "indexFileDirectory": "索引文件目录",
+    "indexFileDirectoryDesc": "搜索结果生成的索引文件存放的目录。默认为根目录。",
+    "indexQueryNotSupported": "暂不支持对搜索结果重新生成索引文件",
+    
     // 提示词管理器
     "promptManager": "提示词管理",
     "addPrompt": "添加提示词",
@@ -252,6 +256,7 @@ export default {
     "confirmationRequired": "需要确认",
 
    // 卢曼卡片设置
+   "cards": "卡片",
    "zettelkastenOptions": "卢曼卡片设置",
    "zettelkastenPosition": "插入位置",
    "zettelkastenPositionDesc": "选择卢曼卡片内容插入的位置",

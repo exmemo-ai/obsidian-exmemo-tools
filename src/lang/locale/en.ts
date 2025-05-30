@@ -19,6 +19,7 @@ export default {
 
   // LLM Settings
   "llmSettings": "LLM",
+  "llmSettingsDesc": "Configure LLM service settings",
   "apiKey": "API key",
   "baseUrl": "Base URL",
   "modelName": "Model name",
@@ -47,7 +48,7 @@ export default {
   // Content Truncation Settings
   "truncateSettings": "Content truncation",
   "truncateContent": "Truncate long content?",
-  "truncateContentDesc": "When using LLM, whether to truncate if the content exceeds the maximum word count",
+  "truncateContentDesc": "When using LLM, whether to truncate if the file content exceeds the maximum word count",
   "maxContentLength": "Max content length after truncation",
   "maxContentLengthDesc": "Set the maximum token limit for the content",
   "truncateMethod": "Truncation method",
@@ -197,7 +198,7 @@ export default {
 
   // Generate index settings
   'indexFileSetting': "Index file",
-  "indexFileSettingDesc": "Generate index file for the directory and summarize the directory content",
+  "indexFileSettingDesc": "Generate index files for directories/search results and summarize content",
   'defaultIndexString': "Index file name",
   'defaultIndexStringDesc': "Default string at the beginning of the index file name",
   'indexExcludeFile': "Excluded files",
@@ -208,6 +209,9 @@ export default {
   'failedToCreateIndex': "Failed to create index file",
   'indexCreated': "Index created at {path}",
   'noFilesToProcess': "No files to process",
+  "indexFileDirectory": "Index File Directory",
+  "indexFileDirectoryDesc": "Directory where search index files will be saved. Default is root directory.",
+  "indexQueryNotSupported": "Regenerating index files from search results is not supported yet",
 
   // Prompt Manager
   "promptManager": "Prompt Manager",
@@ -253,6 +257,7 @@ export default {
   "confirmationRequired": "Confirmation Required",
 
   // Zettelkasten Settings
+  "cards": "Cards",
   "zettelkastenOptions": "Zettelkasten Settings",
   "zettelkastenPosition": "Insert Position",
   "zettelkastenPositionDesc": "Choose where to insert the Zettelkasten content",

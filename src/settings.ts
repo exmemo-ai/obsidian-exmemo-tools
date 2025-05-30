@@ -46,6 +46,7 @@ export interface ExMemoSettings {
     insertCardsAt: 'before' | 'after';
     regenerateExistingCards: boolean;
 	zettelkastenPrompt: string;
+    indexFileDirectory: string;
 }
 
 export const DEFAULT_SETTINGS: ExMemoSettings = {
@@ -86,5 +87,6 @@ export const DEFAULT_SETTINGS: ExMemoSettings = {
 	llmResultMode: LLMResultMode.UNKNOWN,
 	insertCardsAt: 'before',
 	regenerateExistingCards: false,
-	zettelkastenPrompt: t('defaultZettelkastenPrompt')
+	zettelkastenPrompt: t('defaultZettelkastenPrompt'),
+    indexFileDirectory: "",
 }

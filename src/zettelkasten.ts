@@ -11,7 +11,16 @@ export class ZettelkastenCard {
     isFromSelection: boolean;
 
     constructor(title: string = "", source: string = "", content: string = '', isFromSelection: boolean = false) {
-        const timestamp = new Date().getTime().toString();
+        const date = new Date();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+        const seconds = String(date.getSeconds()).padStart(2, '0');
+        const milliseconds = String(date.getMilliseconds()).padStart(3, '0');
+        
+        const timestamp = `${year}${month}${day}${hours}${minutes}${seconds}${milliseconds}`;
         const suffix = isFromSelection ? "1" : "0";
         this.id = `${timestamp}-${suffix}`;
         this.title = title;
@@ -20,7 +29,8 @@ export class ZettelkastenCard {
     }
 
     format(): string {
-    
+
+        console.log("Formatting ZettelkastenCard:", this.id, this.title, this.content);
         const contentPoints = this.content.trim()
             .split('\n')
             .map(line => line.trim())
@@ -124,11 +134,6 @@ export class CardManager {
         await this.app.vault.modify(this.file, newContent);
     }
 
-    async generateCards(content: string, isFromSelection: boolean = false, showNotice: boolean = true): Promise<ZettelkastenCard[]> {
-        const card = await processContentWithLLM(this.app, content, this.file.basename, this.settings, isFromSelection, showNotice);
-        return [card];
-    }
-
     async shouldGenerateCards(): Promise<boolean> {
         if (!this.settings.regenerateExistingCards) {
             const existingCards = await this.readExistingCards();
@@ -206,8 +211,15 @@ async function createZettelkasten(app: App, content: string, sourceFile: TFile, 
             return;
         }
         
-        const cards = await cardManager.generateCards(content, isFromSelection, showNotice);
-        await cardManager.writeCards(cards);
+        let fileTitle = null;
+        if (!isFromSelection) {
+            const fm = app.metadataCache.getFileCache(sourceFile);
+            let frontMatter = fm?.frontmatter || {};
+            fileTitle = frontMatter[settings.metaTitleFieldName]
+        }
+        
+        const card = await processContentWithLLM(app, content, fileTitle, settings, isFromSelection, showNotice);
+        await cardManager.writeCards([card]);
         
         if (showNotice) {
             new Notice(t('zettelkastenCreated'));
@@ -220,7 +232,7 @@ async function createZettelkasten(app: App, content: string, sourceFile: TFile, 
     }
 }
 
-async function processContentWithLLM(app: App, content: string, sourceTitle: string, settings: ExMemoSettings, isFromSelection: boolean = false, showNotice: boolean = true): Promise<ZettelkastenCard> {
+async function processContentWithLLM(app: App, content: string, sourceTitle: string|null, settings: ExMemoSettings, isFromSelection: boolean = false, showNotice: boolean = true): Promise<ZettelkastenCard> {
     const card = new ZettelkastenCard();
     card.isFromSelection = isFromSelection;
     const limit = 200
@@ -230,7 +242,9 @@ async function processContentWithLLM(app: App, content: string, sourceTitle: str
         const extractor = new FeatureExtractor(content, app, settings, truncate);
         const card_format = `Please extract one card, return plain text`
         const card_prompt = settings.zettelkastenPrompt || t('defaultZettelkastenPrompt');
-        extractor.addFeature('title', settings.metaTitlePrompt, [], true, false);
+        if (!sourceTitle) {
+            extractor.addFeature('title', settings.metaTitlePrompt, [], true, false);
+        }
         extractor.addFeature('content', card_format + ': ' + card_prompt, [], true, false);
 
         const success = await extractor.extract(true, showNotice);        
@@ -239,12 +253,10 @@ async function processContentWithLLM(app: App, content: string, sourceTitle: str
             card.title = results.title || sourceTitle;
             card.content = ensureString(results.content) || content.substring(0, limit);
         } else {
-            card.title = sourceTitle;
             card.content = content.substring(0, limit);
         }
     } catch (error) {
         console.error("Error processing content with LLM:", error);
-        card.title = sourceTitle;
         card.content = content.substring(0, limit);
     }
     return card;
