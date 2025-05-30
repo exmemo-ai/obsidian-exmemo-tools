@@ -160,44 +160,8 @@ export function getContentBlock(content: string, blockTitle: string): string {
     return '';
 }
 
-export async function getContent(app: App, file: TFile | null, settings: ExMemoSettings, includeMeta: boolean = false): Promise<string> {
-    let content_str = '';
-    if (file !== null) {
-        content_str = await app.vault.read(file);
-        if (settings && isIndexFile(file, settings)) {
-            const detailContent = getContentBlock(content_str, t('fileDetail'));
-            if (detailContent) {
-                content_str = detailContent;
-            }
-        } else if (!includeMeta && content_str.startsWith('---')) {
-            const endMetaIndex = content_str.indexOf('---', 3);
-            if (endMetaIndex !== -1) {
-                content_str = content_str.substring(endMetaIndex + 3).trim();
-            }
-        }
-    } else {
-        const editor = app.workspace.getActiveViewOfType(MarkdownView)?.editor;
-        if (!editor) {
-            return '';
-        }
-        content_str = editor.getSelection();
-        content_str = content_str.trim();
-        if (content_str.length === 0) {
-            content_str = editor.getValue();
-            if (!includeMeta && content_str.startsWith('---')) {
-                const endMetaIndex = content_str.indexOf('---', 3);
-                if (endMetaIndex !== -1) {
-                    content_str = content_str.substring(endMetaIndex + 3).trim();
-                }
-            }
-        }
-    }
-
-    if (content_str.length === 0) {
-        return '';
-    }
-
-    if (!settings?.metaIsTruncate) {
+export function truncateContent(content_str: string, settings: ExMemoSettings): string {
+    if (!settings?.metaIsTruncate || content_str.length === 0) {
         return content_str;
     }
 
@@ -243,6 +207,46 @@ export async function getContent(app: App, file: TFile | null, settings: ExMemoS
     return content_str;
 }
 
+export async function getContent(app: App, file: TFile | null, settings: ExMemoSettings, includeMeta: boolean = false, truncate: boolean = true): Promise<string> {
+    let content_str = '';
+    if (file !== null) {
+        content_str = await app.vault.read(file);
+        if (settings && isIndexFile(file, settings)) {
+            const detailContent = getContentBlock(content_str, t('fileDetail'));
+            if (detailContent) {
+                content_str = detailContent;
+            }
+        } else if (!includeMeta && content_str.startsWith('---')) {
+            const endMetaIndex = content_str.indexOf('---', 3);
+            if (endMetaIndex !== -1) {
+                content_str = content_str.substring(endMetaIndex + 3).trim();
+            }
+        }
+    } else {
+        const editor = app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+        if (!editor) {
+            return '';
+        }
+        content_str = editor.getSelection();
+        content_str = content_str.trim();
+        if (content_str.length === 0) {
+            content_str = editor.getValue();
+            if (!includeMeta && content_str.startsWith('---')) {
+                const endMetaIndex = content_str.indexOf('---', 3);
+                if (endMetaIndex !== -1) {
+                    content_str = content_str.substring(endMetaIndex + 3).trim();
+                }
+            }
+        }
+    }
+
+    if (content_str.length === 0) {
+        return '';
+    }
+
+    return truncate ? truncateContent(content_str, settings) : content_str;
+}
+
 export function updateFrontMatter(file: TFile, app: App, key: string, value: any, method: string) {
     app.fileManager.processFrontMatter(file, (frontmatter) => {
         if (value === undefined || value === null) {
@@ -282,3 +286,20 @@ export function isIndexFile(file: TFile, settings: ExMemoSettings) {
         return false;
     }
 }
+
+export const ensureString = (value: any): string => {
+    if (value === undefined || value === null) {
+        return '';
+    }
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (typeof value === 'object') {
+        try {
+            return JSON.stringify(value, null, 2);
+        } catch (e) {
+            return String(value);
+        }
+    }
+    return String(value);
+};

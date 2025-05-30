@@ -1,9 +1,8 @@
 import { App, Notice, TFile } from 'obsidian';
 import { ExMemoSettings } from "./settings";
-import { getContent } from './utils';
-import { callLLM } from "./llm_utils";
 import { t } from './lang/helpers';
 import { updateFrontMatter } from './utils';
+import { FeatureExtractor } from './feature_extractor';
 
 export async function adjustFileMeta(file:TFile, app: App, settings: ExMemoSettings,
             force: boolean=false, showNotice: boolean=true, useLLM: boolean=true, debug: boolean=false) {
@@ -59,151 +58,79 @@ export async function adjustFileMeta(file:TFile, app: App, settings: ExMemoSetti
 }
 
 export async function getReq(file: TFile, app: App, settings: ExMemoSettings, force: boolean = false) {
-    const content_str = await getContent(app, file, settings);
-    const fm = app.metadataCache.getFileCache(file)?.frontmatter;
-    
-    // 构建基础请求内容
-    let reqParts = [];
-    let jsonParts = [];
-    
-    // 只有在需要生成标签时才添加标签相关内容
-    if (force || !fm?.[settings.metaTagsFieldName] || fm[settings.metaTagsFieldName].length === 0) {
-        const tag_options = settings.tags.join(',');
-        reqParts.push(`1. Tags: ${settings.metaTagsPrompt}\n   Available tags: ${tag_options}. Feel free to create new ones if none are suitable.`);
-        jsonParts.push(`"tags": "tag1,tag2,tag3"`);
+    const extractor = new FeatureExtractor(file, app, settings);
+    const needToExtract = addFeaturesForExtraction(extractor, file, app, settings, force);
+    if (needToExtract || force) {
+        return await extractor.buildRequest();
+    } else {
+        return '';
     }
-
-    // 添加其他元数据要求
-    let categories_options = settings.categories.join(',') || t('categoryUnknown');
-    reqParts.push(`${reqParts.length + 1}. Category: ${settings.metaCategoryPrompt}\n   Available categories: ${categories_options}. Must choose ONE from the available categories.`);
-    jsonParts.push(`"category": "category_name"`);
-
-    reqParts.push(`${reqParts.length + 1}. Description: ${settings.metaDescription}`);
-    jsonParts.push(`"description": "brief summary"`);
-
-    if (settings.metaTitleEnabled) {
-        reqParts.push(`${reqParts.length + 1}. Title: ${settings.metaTitlePrompt}`);
-        jsonParts.push(`"title": "article title"`);
-    }
-
-    if (settings.customMetadata && settings.customMetadata.length > 0) {
-        for (const meta of settings.customMetadata) {
-            if (meta.key && meta.value && meta.type === 'prompt') {
-                reqParts.push(`${reqParts.length + 1}. ${meta.key}: ${meta.value}`);
-                jsonParts.push(`"${meta.key}": "value for ${meta.key}"`);
-            }
-        }
-    }
-
-    const req = `I need to generate metadata for the following article. Requirements:\n\n` +
-        reqParts.join('\n\n') +
-        `\n\nPlease return in the following JSON format:\n{\n    ${jsonParts.join(',\n    ')}\n}\n\n` +
-        `File path: ${file.path}\n\nThe article content is as follows:\n\n${content_str}`;
-
-    return req;
 }
 
 async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings, 
             force: boolean=false, showNotice: boolean=true, debug: boolean=false) {
+    const extractor = new FeatureExtractor(file, app, settings);
     const fm = app.metadataCache.getFileCache(file);
     let frontMatter = fm?.frontmatter || {};
-        
-    // 添加标签、类别、描述和标题
-    if (!frontMatter[settings.metaTagsFieldName] || 
-        frontMatter[settings.metaTagsFieldName]?.length === 0 ||
-        !frontMatter[settings.metaDescriptionFieldName] || 
-        frontMatter[settings.metaDescriptionFieldName]?.trim() === '' ||
-        (settings.metaTitleEnabled && 
-            (!frontMatter[settings.metaTitleFieldName] || 
-                frontMatter[settings.metaTitleFieldName]?.trim() === '')) ||
-        (settings.metaCategoryEnabled && 
-            (!frontMatter[settings.metaCategoryFieldName] || 
-                frontMatter[settings.metaCategoryFieldName]?.trim() === '')) ||
-        (settings.customMetadata && settings.customMetadata.some(meta => 
-            meta.type === 'prompt' && 
-            meta.key && 
-            (!frontMatter[meta.key] || 
-             (typeof frontMatter[meta.key] === 'string' && frontMatter[meta.key].trim() === '')))) ||
-        force) {
-    } else {
-        console.warn(t('fileAlreadyContainsTagsAndDescription'));
-        return false;
-    }
 
-    const req = await getReq(file, app, settings, force);
-    let ret = await callLLM(req, settings, showNotice);
-    if (debug) {
-        //console.log('content_str', content_str);
-        //console.log('req', req);
-        console.log('callLLM ret:', ret);
-    }
-
-    if (ret === "" || ret === undefined || ret === null) {
-        return false;
-    }
-    ret = ret.replace(/`/g, '');
-
-    let ret_json = {} as { tags?: string; category?: string; description?: string; title?: string; [key: string]: any };
-    try {
-        let json_str = ret.match(/{[^]*}/);
-        if (json_str) {
-            const parsedJson = JSON.parse(json_str[0]);
-            
-            for (const key in parsedJson) {
-                if (typeof parsedJson[key] === 'string') {
-                    const value = parsedJson[key].trim().toLowerCase();
-                    if (value === 'true') {
-                        parsedJson[key] = true;
-                    } else if (value === 'false') {
-                        parsedJson[key] = false;
-                    }
-                }
-            }
-            
-            ret_json = parsedJson as { tags?: string; category?: string; description?: string; title?: string; [key: string]: any };
-        }        
-    } catch (error) {
-        new Notice(t('parseError') + "\n" + error);
-        console.error("parseError:", error);
+    const needToExtract = addFeaturesForExtraction(extractor, file, app, settings, force);
+    if (!needToExtract) {
+        if (debug) console.warn(t('fileAlreadyContainsTagsAndDescription'));
         return false;
     }
     
-    // 检查并更新各个字段
-    if (ret_json.tags) {
-        const tags = ret_json.tags.split(',');
-        updateFrontMatter(file, app, settings.metaTagsFieldName, tags, 'append');
+    // 提取特征
+    const success = await extractor.extract(force, showNotice);
+    if (!success) return false;
+    
+    // 获取结果并更新前置元数据
+    const results = extractor.getAllFeatures();
+    
+    // 更新标签
+    if (results[settings.metaTagsFieldName]) {
+        updateFrontMatter(file, app, settings.metaTagsFieldName, 
+                          results[settings.metaTagsFieldName], 'append');
     }
     
-    if (ret_json.category && settings.metaCategoryEnabled) {
+    // 更新类别
+    if (results[settings.metaCategoryFieldName] && settings.metaCategoryEnabled) {
         const currentValue = frontMatter[settings.metaCategoryFieldName];
         const isEmpty = !currentValue || currentValue.trim() === '';
-        updateFrontMatter(file, app, settings.metaCategoryFieldName, ret_json.category, 
-            force || isEmpty ? 'update' : 'keep');
+        updateFrontMatter(file, app, settings.metaCategoryFieldName, 
+                          results[settings.metaCategoryFieldName], 
+                          force || isEmpty ? 'update' : 'keep');
     }
 
-    if (ret_json.description) {
+    // 更新描述
+    if (results[settings.metaDescriptionFieldName]) {
         const currentValue = frontMatter[settings.metaDescriptionFieldName];
         const isEmpty = !currentValue || currentValue.trim() === '';
-        updateFrontMatter(file, app, settings.metaDescriptionFieldName, ret_json.description, 
-            force || isEmpty ? 'update' : 'keep');
+        updateFrontMatter(file, app, settings.metaDescriptionFieldName, 
+                          results[settings.metaDescriptionFieldName], 
+                          force || isEmpty ? 'update' : 'keep');
     }
 
-    if (settings.metaTitleEnabled && ret_json.title) {
-        let title = ret_json.title.trim();
-        if ((title.startsWith('"') && title.endsWith('"')) || 
-            (title.startsWith("'") && title.endsWith("'"))) {
-            title = title.substring(1, title.length - 1);
+    // 更新标题
+    if (settings.metaTitleEnabled && results[settings.metaTitleFieldName]) {
+        let title = results[settings.metaTitleFieldName];
+        if (typeof title === 'string') {
+            title = title.trim();
+            if ((title.startsWith('"') && title.endsWith('"')) || 
+                (title.startsWith("'") && title.endsWith("'"))) {
+                title = title.substring(1, title.length - 1);
+            }
         }
         const currentValue = frontMatter[settings.metaTitleFieldName];
         const isEmpty = !currentValue || currentValue.trim() === '';
         updateFrontMatter(file, app, settings.metaTitleFieldName, title, 
-            force || isEmpty ? 'update' : 'keep');
+                          force || isEmpty ? 'update' : 'keep');
     }
 
+    // 更新自定义元数据
     if (settings.customMetadata && settings.customMetadata.length > 0) {
         for (const meta of settings.customMetadata) {
-            if (meta.key && meta.value && meta.type === 'prompt' && ret_json[meta.key] !== undefined) {
-                let value = ret_json[meta.key];
+            if (meta.key && meta.value && meta.type === 'prompt' && results[meta.key] !== undefined) {
+                let value = results[meta.key];
                 
                 if (typeof value === 'string') {
                     value = value.trim();
@@ -221,6 +148,88 @@ async function addMetaByLLM(file: TFile, app: App, settings: ExMemoSettings,
     }
     
     return true;
+}
+
+function addFeaturesForExtraction(
+    extractor: FeatureExtractor,
+    file: TFile, 
+    app: App, 
+    settings: ExMemoSettings, 
+    force: boolean = false
+): boolean {
+    const fm = app.metadataCache.getFileCache(file);
+    let frontMatter = fm?.frontmatter || {};
+    let needToExtract = force;
+    
+    if (!frontMatter[settings.metaTagsFieldName] || 
+        frontMatter[settings.metaTagsFieldName]?.length === 0 || force) {
+        extractor.addFeature(
+            settings.metaTagsFieldName,
+            settings.metaTagsPrompt,
+            settings.tags,
+            true,
+            true
+        );
+        needToExtract = true;
+    }
+    
+    if (settings.metaCategoryEnabled &&
+        (!frontMatter[settings.metaCategoryFieldName] || 
+        frontMatter[settings.metaCategoryFieldName]?.trim() === '' || force)) {
+        extractor.addFeature(
+            settings.metaCategoryFieldName,
+            settings.metaCategoryPrompt,
+            settings.categories || [t('categoryUnknown')],
+            true,
+            false
+        );
+        needToExtract = true;
+    }
+
+    if (!frontMatter[settings.metaDescriptionFieldName] || 
+        frontMatter[settings.metaDescriptionFieldName]?.trim() === '' || force) {
+        extractor.addFeature(
+            settings.metaDescriptionFieldName,
+            settings.metaDescription,
+            [],
+            true,
+            false
+        );
+        needToExtract = true;
+    }
+
+    if (settings.metaTitleEnabled && 
+        (!frontMatter[settings.metaTitleFieldName] || 
+        frontMatter[settings.metaTitleFieldName]?.trim() === '' || force)) {
+        extractor.addFeature(
+            settings.metaTitleFieldName,
+            settings.metaTitlePrompt,
+            [],
+            true,
+            false
+        );
+        needToExtract = true;
+    }
+
+    if (settings.customMetadata && settings.customMetadata.length > 0) {
+        for (const meta of settings.customMetadata) {
+            if (meta.key && meta.value && meta.type === 'prompt' &&
+                (!frontMatter[meta.key] || 
+                (typeof frontMatter[meta.key] === 'string' && frontMatter[meta.key].trim() === '') || 
+                force)) {
+                extractor.addFeature(
+                    meta.key,
+                    meta.value,
+                    [],
+                    true,
+                    false
+                );
+                needToExtract = true;
+            }
+        }
+    }
+    
+    return needToExtract;
 }
 
 async function addCover(file: TFile, app: App, settings: ExMemoSettings, force: boolean=false): Promise<boolean> {

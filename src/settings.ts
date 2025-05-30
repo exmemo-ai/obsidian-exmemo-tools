@@ -43,6 +43,9 @@ export interface ExMemoSettings {
 	metaCoverUrl: string;
 	metaCoverUseFirst: boolean;
 	llmResultMode: LLMResultMode;
+    insertCardsAt: 'before' | 'after';
+    regenerateExistingCards: boolean;
+	zettelkastenPrompt: string;
 }
 
 export const DEFAULT_SETTINGS: ExMemoSettings = {
@@ -81,4 +84,7 @@ export const DEFAULT_SETTINGS: ExMemoSettings = {
 	metaCoverUrl: '',
 	metaCoverUseFirst: false,
 	llmResultMode: LLMResultMode.UNKNOWN,
+	insertCardsAt: 'before',
+	regenerateExistingCards: false,
+	zettelkastenPrompt: t('defaultZettelkastenPrompt')
 }

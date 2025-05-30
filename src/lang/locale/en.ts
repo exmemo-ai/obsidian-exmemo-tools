@@ -42,6 +42,7 @@ export default {
   "updateMetaOptionsDesc": "If meta already exists, choose whether to regenerate",
   "updateForce": "Force update existing items",
   "updateNoLLM": "Only update items that do not use LLM",
+  "alreadyContainsMetadata": "Data already contains meta info",
 
   // Content Truncation Settings
   "truncateSettings": "Content truncation",
@@ -184,6 +185,8 @@ export default {
   'estimatedTokens': "Estimated consumption {tokens} token, do you want to extract information?",  
   'skip': 'Skip LLM',
   'createIndex': 'ExMemo generate dir index',
+  "addPropsToSearchResults": "ExMemo batch add metadata",
+  "createIndexFromSearch": "ExMemo create index file",
   'fileList': 'File list',
   'fileDetail': 'File detail',
   'noDescription': 'No description',
@@ -248,4 +251,26 @@ export default {
   "invalidSettingsFile": "Invalid settings file",
   "importSettingsWarning": "Importing will overwrite all current ExMemo Tools settings. Continue?",
   "confirmationRequired": "Confirmation Required",
+
+  // Zettelkasten Settings
+  "zettelkastenOptions": "Zettelkasten Settings",
+  "zettelkastenPosition": "Insert Position",
+  "zettelkastenPositionDesc": "Choose where to insert the Zettelkasten content",
+  "documentTop": "Document Top",
+  "documentBottom": "Document Bottom",
+  "zettelkastenPrompt": "Zettelkasten Prompt",
+  "zettelkastenPromptDesc": "Prompt used to generate Zettelkasten note content. The system will generate based on the current document content.",
+  "exmemoCreateZettelkasten": "Generate a card",
+  "errorExtractingZettelkasten": "Error extracting Zettelkasten note",
+  "noActiveEditor": "No active editor found. Please open a markdown file first.",
+  "batchZettelkastenComplete": "Batch Zettelkasten creation complete. Successfully processed {successCount} files, failed {failCount} files.",
+  "zettelkastenCreated": "Zettelkasten note created successfully",
+  "insertCardsAt":"Insert Position",
+  "insertCardsAtDesc":"Choose where to insert Zettelkasten cards",
+  "beforeContent":"Before Content",
+  "afterContent":"After Content",
+  "regenerateExistingCards":"Regenerate Existing Cards",
+  "regenerateExistingCardsDesc":"Whether to regenerate existing Zettelkasten cards",
+  "cardsAlreadyExist": "Zettelkasten cards already exist",
+  "defaultZettelkastenPrompt": "Please generate a Zettelkasten-style summary based on the following note content, including:\n1. Main concepts and ideas\n2. Connections to other concepts\n3. Possible applications",
 }

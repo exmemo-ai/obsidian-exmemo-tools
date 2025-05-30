@@ -42,6 +42,7 @@ export default {
     "updateMetaOptionsDesc": "如果元数据已经存在，是否重新生成",
     "updateForce": "强制更新已存在项",
     "updateNoLLM": "只更新不用LLM的项",
+    "alreadyContainsMetadata": "已包含元数据",
 
     // 内容截断设置
     "truncateSettings": "内容截断",
@@ -183,6 +184,8 @@ export default {
     "estimatedTokens": "预计消耗 {tokens} token，是否用模型提取信息？",
     "skip": "跳过 LLM 提取",
     "createIndex": "ExMemo生成目录索引",
+    "addPropsToSearchResults": "ExMemo批量添加元数据",
+    "createIndexFromSearch": "ExMemo从搜索结果创建索引",
     "fileList": "文件列表",
     "fileDetail": "文件详情",
     "noDescription": "暂无",
@@ -246,5 +249,27 @@ export default {
     "settingsImported": "设置已导入",
     "invalidSettingsFile": "无效的设置文件",
     "importSettingsWarning": "导入将覆盖当前所有ExMemo Tools的设置，是否继续？",
-    "confirmationRequired": "需要确认"
+    "confirmationRequired": "需要确认",
+
+   // 卢曼卡片设置
+   "zettelkastenOptions": "卢曼卡片设置",
+   "zettelkastenPosition": "插入位置",
+   "zettelkastenPositionDesc": "选择卢曼卡片内容插入的位置",
+   "documentTop": "文档顶部",
+   "documentBottom": "文档底部",
+   "zettelkastenPrompt": "卢曼卡片提示词",
+   "zettelkastenPromptDesc": "用于生成卢曼卡片内容的提示词。系统将根据当前文档内容生成卢曼笔记。",
+   "exmemoCreateZettelkasten": "生成卢曼卡片",
+   "errorExtractingZettelkasten": "提取卢曼卡片时出错",
+   "noActiveEditor": "没有活动编辑器",
+   "batchZettelkastenComplete": "批量生成卢曼卡片完成。成功处理 {successCount} 个文件，失败 {failCount} 个文件。",
+   "zettelkastenCreated": "卢曼卡片已创建",
+   "insertCardsAt":"插入位置",
+   "insertCardsAtDesc":"选择插入卢曼卡片的位置",
+   "beforeContent":"在内容前",
+   "afterContent":"在内容后",
+   "regenerateExistingCards":"重新生成",
+   "regenerateExistingCardsDesc":"是否重新生成已存在的卢曼卡片",
+   "cardsAlreadyExist": "已存在卢曼卡片",
+   "defaultZettelkastenPrompt": "请根据以下笔记内容，生成一个卢曼卡片式的总结，包括：\n1. 主要概念和思想\n2. 与其他概念的联系\n3. 可能的应用场景",
 }

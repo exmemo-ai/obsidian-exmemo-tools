@@ -21,6 +21,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		this.addLLMSettings();
 		this.addFolderSettings();
 		this.addMetadataSettings();
+		this.addCardSettings();
 		this.addIndexFileSettings();
 		this.addImportExportSettings();
 		this.addDonationSettings();
@@ -327,9 +328,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 					});
 				text.inputEl.setAttr('rows', '3');
 				text.inputEl.addClass('setting-textarea');
-			});
-
-
+				});
 
 		// 类别设置部分
 		const categoryCollapseEl = collapseEl.createEl('details', {
@@ -597,6 +596,66 @@ export class ExMemoSettingTab extends PluginSettingTab {
 						this.refresh();
 					}));
 			});
+	}
+
+	private addCardSettings(): void {
+		const cardContainer = this.containerEl.createEl('div');
+		const zettelkastenCollapseEl = cardContainer.createEl('details', { cls: 'setting-item-collapse' });
+		zettelkastenCollapseEl.createEl('summary', { text: t("zettelkastenOptions") || "zettelkastenOptions" });
+		
+		new Setting(zettelkastenCollapseEl)
+			.setName(t('zettelkastenPosition'))
+			.setDesc(t('zettelkastenPositionDesc'))
+			.addDropdown(dropdown => dropdown
+				.addOption('top', t('documentTop'))
+				.addOption('bottom', t('documentBottom'))
+				.setValue(this.plugin.settings.zettelkastenPosition || 'bottom')
+				.onChange(async (value) => {
+					if (!this.plugin.settings.hasOwnProperty('zettelkastenPosition')) {
+						this.plugin.settings.zettelkastenPosition = 'bottom';
+					}
+					this.plugin.settings.zettelkastenPosition = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(zettelkastenCollapseEl)
+			.setName(t('zettelkastenPrompt'))
+			.setDesc(t('zettelkastenPromptDesc'))
+			.addTextArea(text => {
+				text.setPlaceholder(t('defaultZettelkastenPrompt'))
+					.setValue(this.plugin.settings.zettelkastenPrompt)
+					.onChange(async (value) => {
+						if (!this.plugin.settings.hasOwnProperty('zettelkastenPrompt')) {
+							this.plugin.settings.zettelkastenPrompt = "";
+						}
+						this.plugin.settings.zettelkastenPrompt = value;
+						await this.plugin.saveSettings();
+					});
+				text.inputEl.setAttr('rows', '5');
+				text.inputEl.addClass('setting-textarea');
+			});
+
+			new Setting(zettelkastenCollapseEl)
+			.setName(t('insertCardsAt'))
+			.setDesc(t('insertCardsAtDesc'))
+			.addDropdown(dropdown => dropdown
+				.addOption('before', t('beforeContent'))
+				.addOption('after', t('afterContent'))
+				.setValue(this.plugin.settings.insertCardsAt)
+				.onChange(async (value) => {
+					this.plugin.settings.insertCardsAt = value as 'before' | 'after';
+					await this.plugin.saveSettings();
+				}));
+		
+		new Setting(zettelkastenCollapseEl)
+			.setName(t('regenerateExistingCards'))
+			.setDesc(t('regenerateExistingCardsDesc'))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.regenerateExistingCards)
+				.onChange(async (value) => {
+					this.plugin.settings.regenerateExistingCards = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 
 	private refresh(): void {
