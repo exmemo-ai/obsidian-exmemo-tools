@@ -515,4 +515,5 @@ export async function updateIndex(file: TFile, app: App, settings: ExMemoSetting
             new Notice(t('indexQueryNotSupported'));
         }
     }
+    return null;
 }

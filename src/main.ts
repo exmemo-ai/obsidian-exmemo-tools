@@ -75,7 +75,7 @@ export default class ExMemoToolsPlugin extends Plugin {
         );
 
         this.registerEvent(
-            this.app.workspace.on("search:results-menu", (menu: Menu, leaf: any) => {
+            this.app.workspace.on("search:results-menu" as any, (menu: Menu, leaf: any) => {
                 menu.addItem((item) => {
                     item
                     .setIcon("tag")
@@ -93,7 +93,7 @@ export default class ExMemoToolsPlugin extends Plugin {
             })
         );
         this.registerEvent(
-            this.app.workspace.on("search:results-menu", (menu: Menu, leaf: any) => {
+            this.app.workspace.on("search:results-menu" as any, (menu: Menu, leaf: any) => {
               menu.addItem((item) => {
                 item
                   .setIcon("list")
