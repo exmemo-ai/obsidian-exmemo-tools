@@ -30,7 +30,7 @@ export class ZettelkastenCard {
 
     format(): string {
 
-        console.log("Formatting ZettelkastenCard:", this.id, this.title, this.content);
+        //console.log("Formatting ZettelkastenCard:", this.id, this.title, this.content);
         const contentPoints = this.content.trim()
             .split('\n')
             .map(line => line.trim())
@@ -148,7 +148,7 @@ export class CardManager {
 }
 
 export async function extractZettelkasten(app: App, settings: ExMemoSettings) {
-    console.log("Extracting Zettelkasten...");
+    //console.log("Extracting Zettelkasten...");
     const activeFile = app.workspace.getActiveFile();
     if (!activeFile) {
         new Notice(t('pleaseOpenFile'));
@@ -183,6 +183,7 @@ export async function extractZettelkasten(app: App, settings: ExMemoSettings) {
 }
 
 export async function batchCreateZettelkasten(app: App, files: TFile[], settings: ExMemoSettings) {
+    // 暂时未使用
     let successCount = 0;
     let failCount = 0;
     

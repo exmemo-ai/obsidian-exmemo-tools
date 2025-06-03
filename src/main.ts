@@ -81,7 +81,6 @@ export default class ExMemoToolsPlugin extends Plugin {
                     .setIcon("tag")
                     .setTitle(t("addPropsToSearchResults"))
                     .onClick(async () => {
-                        console.log("Add props to search results clicked");
                         let files = this.getFilesFromSearch(leaf);
                         if (!files.length) {
                         new Notice(t("noFilesToProcess"), 4000);
@@ -99,7 +98,6 @@ export default class ExMemoToolsPlugin extends Plugin {
                   .setIcon("list")
                   .setTitle(t("createIndexFromSearch"))
                   .onClick(async () => {
-                    console.log("Create Index file");
                     let files = this.getFilesFromSearch(leaf);
                     if (!files.length) {
                       new Notice(t("noFilesToProcess"), 4000);
