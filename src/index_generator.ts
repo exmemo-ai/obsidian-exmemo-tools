@@ -300,8 +300,8 @@ async function getDirEntries(dir: TFolder, app: App, settings: ExMemoSettings): 
             name: subDir.name,
             path: subDir.path,
             isDir: true,
-            tags: fm?.frontmatter?.tags || [],
-            description: fm?.frontmatter?.description || t('noDescription'),
+            tags: fm?.frontmatter?.[settings.metaTagsFieldName] || [],
+            description: fm?.frontmatter?.[settings.metaDescriptionFieldName] || t('noDescription'),
             indexFile: indexFile
         });
     }
@@ -318,8 +318,8 @@ async function getDirEntries(dir: TFolder, app: App, settings: ExMemoSettings): 
             name: file.basename,
             path: file.path,
             isDir: false,
-            tags: fm?.frontmatter?.tags || [],
-            description: fm?.frontmatter?.description || t('noDescription'),
+            tags: fm?.frontmatter?.[settings.metaTagsFieldName] || [],
+            description: fm?.frontmatter?.[settings.metaDescriptionFieldName] || t('noDescription'),
             file: file
         });
     }
@@ -416,8 +416,8 @@ export async function createTempIndex(files: TFile[], app: App, settings: ExMemo
             name: file.basename,
             path: file.path,
             isDir: false,
-            tags: fm?.frontmatter?.tags || [],
-            description: fm?.frontmatter?.description || t('noDescription'),
+            tags: fm?.frontmatter?.[settings.metaTagsFieldName] || [],
+            description: fm?.frontmatter?.[settings.metaDescriptionFieldName] || t('noDescription'),
             file: file
         });
     }
