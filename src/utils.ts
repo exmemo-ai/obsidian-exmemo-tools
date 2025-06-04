@@ -99,8 +99,62 @@ export async function simplifyTokens(allTags: string[], app: App, settings: ExMe
         new Notice(t("llmError"));
         return null;
     }
+    //console.log("LLM result for tags:", result);
 
-    return result.split('\n').filter(t => t.trim());
+    let cleanedResult = result.trim();
+    const codeBlockStart = cleanedResult.indexOf('```');
+    if (codeBlockStart !== -1) {
+        const codeBlockEnd = cleanedResult.lastIndexOf('```');
+        if (codeBlockEnd > codeBlockStart) {
+            const blockContent = cleanedResult.substring(codeBlockStart, codeBlockEnd + 3);
+            const lines = blockContent.split('\n');
+            if (lines.length > 1 && lines[0].startsWith('```')) {
+                lines.shift();
+            }
+            if (lines.length > 0 && lines[lines.length-1].includes('```')) {
+                lines.pop();
+            }
+            cleanedResult = lines.join('\n').trim();
+        }
+    }
+
+    let simplifiedTags: string[] = [];
+
+    try {
+        const jsonResult = JSON.parse(cleanedResult);
+        if (jsonResult && Array.isArray(jsonResult.tags)) {
+            simplifiedTags = jsonResult.tags.filter((t: unknown) => typeof t === 'string' && t.trim());
+        }
+    } catch (e) {
+        console.log("Failed to parse JSON response, falling back to text parsing", e);
+        
+        if (cleanedResult.includes('"tags":')) {
+            try {
+                const tagsMatch = cleanedResult.match(/"tags"\s*:\s*\[([\s\S]*?)\]/);
+                if (tagsMatch && tagsMatch[1]) {
+                    simplifiedTags = tagsMatch[1]
+                        .split(',')
+                        .map(tag => tag.trim().replace(/^["']|["']$/g, ''))
+                        .filter(Boolean);
+                }
+            } catch (err) {
+                console.log("Failed advanced text parsing", err);
+            }
+        }
+    }
+    
+    if (simplifiedTags.length === 0) {
+        simplifiedTags = result.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0 && !line.startsWith('```'));
+    }
+    
+    const simplifiedTokenCount = splitIntoTokens(simplifiedTags.join(',')).length;
+    new Notice(t("tagsSimplified")
+        .replace("{count}", simplifiedTags.length.toString())
+        .replace("{tokens}", simplifiedTokenCount.toString()));
+    
+    return simplifiedTags;
 }
 
 export async function loadTags(app: App, settings: ExMemoSettings): Promise<Record<string, number>> {

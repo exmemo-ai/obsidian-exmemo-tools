@@ -71,7 +71,8 @@ export default {
   "tagsFieldName": "Tags field name",
   "tagsFieldNameDesc": "Field name used for automatically generating tags (default: tags)",
   "simplifyTagsConfirm": "The current tag list contains {count} tokens, do you want to use AI to simplify it?",
-  "simplifyTagsPrompt": "Please simplify the following tag list to within {count} most important tags, keeping the original format and not returning any other content. The tag list is as follows:",
+  "simplifyTagsPrompt": "Please simplify the following tag list to no more than {count} most important tags, and return in JSON format as {\"tags\": [\"tag1\", \"tag2\", ...]}, without any other content. The tag list is as follows:",
+  "tagsSimplified": "Simplified to {count} tags, using approximately {tokens} tokens",
 
   // Description Settings
   "description": "Description",
@@ -176,9 +177,9 @@ export default {
   "insertContent": "Content to be inserted",
 
   // Generate index
-  'foundFilesNeedProcess': "A total of {total} files are included in the subdirectory, of which {count} files need to extract information. ",
+  'foundFilesNeedProcess': "A total of {total} files are included, of which {count} files need to extract information. ",
   'processCancelled': "Processing cancelled",
-  'processComplete': "Processing complete for {count} files",
+  'processComplete': "Processed {count} files' meta information",
   'cancel': "Cancel",
   'ok': "OK",
   'continue': "Continue",
@@ -194,7 +195,7 @@ export default {
   'moc': 'MOC',
   'processingFiles': "Processing files",
   'generatingIndex': "Generating index",
-  'processCompleteWithIndex': "Completed processing {count} files and generated {dirs} directory indices",
+  'processCompleteWithIndex': "Processed {count} files' meta information and generated {dirs} directory index",
 
   // Generate index settings
   'indexFileSetting': "Index file",
@@ -208,6 +209,7 @@ export default {
   'foundDirsNeedIndex': "{dirs} directories that need to extract information.",
   'failedToCreateIndex': "Failed to create index file",
   'indexCreated': "Index created at {path}",
+  'indexUpdated': "Index updated at {path}",
   'noFilesToProcess': "No files to process",
   "indexFileDirectory": "Index File Directory",
   "indexFileDirectoryDesc": "Directory where search index files will be saved. Default is root directory.",

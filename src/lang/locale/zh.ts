@@ -71,7 +71,8 @@ export default {
     "tagsFieldName": "标签字段名",
     "tagsFieldNameDesc": "自动生成标签使用的字段名 (默认: tags)",
     "simplifyTagsConfirm": "当前标签列表包含 {count} 个tokens，是否需要使用AI自动精简？",
-    "simplifyTagsPrompt": "请将以下标签列表精简到{count}个以内最重要的标签，保持原有格式，不返回其它内容，标签列表如下：",
+    "simplifyTagsPrompt": "请将以下标签列表精简到{count}个以内最重要的标签，并以JSON格式返回，格式为{\"tags\": [\"标签1\", \"标签2\", ...]}，不要返回任何其它内容。标签列表如下：",
+    "tagsSimplified": "已精简到 {count} 个标签，约使用 {tokens} 个token",
 
     // 描述设置
     "description": "描述",
@@ -176,9 +177,9 @@ export default {
     "insertContent": "待插入内容",
 
     // 生成索引
-    "foundFilesNeedProcess": "子目录中共纳入 {total} 个文件，其中 {count} 个文件需要提取信息。",
+    "foundFilesNeedProcess": "共纳入 {total} 个文件，其中 {count} 个文件需要提取信息。",
     "processCancelled": "处理已取消",
-    "processComplete": "已完成处理 {count} 个文件",
+    "processComplete": "已处理 {count} 个文件的 Meta 信息",
     "cancel": "取消",
     "continue": "继续",
     "processing": "处理中",
@@ -193,7 +194,7 @@ export default {
     "moc": "目录",
     "processingFiles": "处理文件",
     "generatingIndex": "生成索引",
-    "processCompleteWithIndex": "已完成处理 {count} 个文件并生成 {dirs} 个目录索引",
+    "processCompleteWithIndex": "已处理 {count} 个文件的 Meta 信息，并生成 {dirs} 个目录索引",
 
     // 生成索引设置
     "indexFileSetting": "生成索引文件",
@@ -207,6 +208,7 @@ export default {
     "foundDirsNeedIndex": "{dirs} 个目录需要提取信息。",
     'failedToCreateIndex': "无法创建索引",
     'indexCreated': "创建索引：{path}",
+    'indexUpdated': "更新索引：{path}",
     'noFilesToProcess': "没有需要处理的文件",
     "indexFileDirectory": "索引文件目录",
     "indexFileDirectoryDesc": "搜索结果生成的索引文件存放的目录。默认为根目录。",

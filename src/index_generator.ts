@@ -173,10 +173,20 @@ async function estimateTokens(files: TFile[], dirs: TFolder[], app: App, setting
 }
 
 export async function updateFilesMetadata(files: TFile[], app: App, settings: ExMemoSettings): Promise<void> {
-    const filteredFiles = files.filter(file => !shouldExclude(file, settings.indexExcludeFile));    
+    const originalCount = files.length;
+    const filteredFiles = files.filter(file => !shouldExclude(file, settings.indexExcludeFile));
+    
+    if (filteredFiles.length === 0) {
+        new Notice(t('foundFilesNeedProcess')
+            .replace('{total}', originalCount.toString())
+            .replace('{count}', '0'));
+        return;
+    }
+    
     const {fileCount, total, estimatedTokens} = await estimateTokens(filteredFiles, [], app, settings);
     
     let shouldExtract: boolean | undefined = false;
+    //console.log('estimatedTokens', estimatedTokens, filteredFiles);
     if (estimatedTokens > 0) {
         let confirmMessage = '';
         if (fileCount > 0) {
@@ -393,7 +403,7 @@ export async function createTempIndex(files: TFile[], app: App, settings: ExMemo
     const filteredFiles = files.filter(file => !shouldExclude(file, settings.indexExcludeFile));
     
     if (filteredFiles.length === 0) {
-        new Notice(t('foundFilesNeedProcess'));
+        new Notice(t('foundFilesNeedProcess').replace('{total}', files.length.toString()).replace('{count}', '0') + t('processCancelled'));
         return null;
     }
     
@@ -453,23 +463,32 @@ export async function createTempIndex(files: TFile[], app: App, settings: ExMemo
     }
 
     try {
-        // Escape special characters in the query
+        let tempIndexFile = app.vault.getAbstractFileByPath(tempIndexPath) as TFile | null;
+        let isFileExists = !!tempIndexFile;
         const escapedQuery = query ? query.replace(/"/g, '\\"') : '';
 
-        // Initialize file content with query information in metadata
-        const initialContent = `---\ntags: []\nquery: "${escapedQuery}"\n---\n\n`;
-        await app.vault.create(tempIndexPath, initialContent);
-        
-        let tempIndexFile: TFile | null = null;
-        tempIndexFile = app.vault.getAbstractFileByPath(tempIndexPath) as TFile | null;
-                        
         if (!tempIndexFile) {
-            new Notice(t('failedToCreateIndex'));
-            return null;
+            const initialContent = `---\ntags: []\nquery: "${escapedQuery}"\n---\n\n`;
+            await app.vault.create(tempIndexPath, initialContent);
+            
+            tempIndexFile = app.vault.getAbstractFileByPath(tempIndexPath) as TFile | null;
+                            
+            if (!tempIndexFile) {
+                new Notice(t('failedToCreateIndex'));
+                return null;
+            }
+        } else {
+            updateFrontMatter(tempIndexFile, app, 'query', `"${escapedQuery}"`, 'update');
         }
         
-        const indexFile = await updateIndexFile(entries, tempIndexFile, app, settings, true);        
-        new Notice(t('indexCreated').replace('{path}', tempIndexFile.path));        
+        const indexFile = await updateIndexFile(entries, tempIndexFile, app, settings, true);
+        
+        if (isFileExists) {
+            new Notice(t('indexUpdated').replace('{path}', tempIndexFile.path));
+        } else {
+            new Notice(t('indexCreated').replace('{path}', tempIndexFile.path));
+        }
+        
         return indexFile;
     } catch (error) {
         console.error('Error creating temp index:', error);

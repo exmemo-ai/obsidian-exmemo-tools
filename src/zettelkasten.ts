@@ -10,7 +10,7 @@ export class ZettelkastenCard {
     content: string;
     isFromSelection: boolean;
 
-    constructor(title: string = "", source: string = "", content: string = '', isFromSelection: boolean = false) {
+    constructor(isFromSelection: boolean = false, title: string = "", source: string = "", content: string = '') {
         const date = new Date();
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -63,7 +63,7 @@ ${contentPoints}`;
         }
         
         const content = contentLines.join('\n');        
-        const card = new ZettelkastenCard(title, '', content, isFromSelection);
+        const card = new ZettelkastenCard(isFromSelection, title, '', content);
         card.id = `${timestamp}-${selectionFlag}`;
         return card;
     }
@@ -234,8 +234,7 @@ async function createZettelkasten(app: App, content: string, sourceFile: TFile, 
 }
 
 async function processContentWithLLM(app: App, content: string, sourceTitle: string|null, settings: ExMemoSettings, isFromSelection: boolean = false, showNotice: boolean = true): Promise<ZettelkastenCard> {
-    const card = new ZettelkastenCard();
-    card.isFromSelection = isFromSelection;
+    const card = new ZettelkastenCard(isFromSelection);
     const limit = 200
 
     try {

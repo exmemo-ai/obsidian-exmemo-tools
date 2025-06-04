@@ -309,6 +309,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 						}
 						this.plugin.settings.tags = currentTagList;
 						textComponent.setValue(this.plugin.settings.tags.join('\n'));						
+						await this.plugin.saveSettings();
 					});
 			});
 		new Setting(tagsCollapseEl)

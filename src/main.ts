@@ -83,8 +83,8 @@ export default class ExMemoToolsPlugin extends Plugin {
                     .onClick(async () => {
                         let files = this.getFilesFromSearch(leaf);
                         if (!files.length) {
-                        new Notice(t("noFilesToProcess"), 4000);
-                        return;
+                            new Notice(t("noFilesToProcess"), 4000);
+                            return;
                         }
                         await updateFilesMetadata(files, this.app, this.settings); // 250528, add output file name
                     });
