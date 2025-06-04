@@ -14,7 +14,7 @@
 
 * Adjust multilingual support logic
 * Refine LLM settings descriptions, change API key to non-plaintext storage
-* Optimize prompt editing interface, add clear button, adjust display lines
+* Optimize prompt editing interface, add reset button, adjust display lines
 
 ## [1.1.0] - 2025-04-03
 
