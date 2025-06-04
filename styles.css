@@ -1,5 +1,5 @@
 .setting-textarea {
-    width: 400px;
+    width: 100%;
 }
 
 .setting-item-nested {
@@ -90,4 +90,62 @@
 .prompt-item.dragging {
     opacity: 0.5;
     background: var(--background-modifier-hover);
+}
+
+.prompt-setting-flex {
+    display: flex !important;
+    justify-content: space-between !important;
+}
+
+.prompt-setting-flex .setting-item-info {
+    flex: 0 1 auto !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+    width: 70% !important;
+}
+
+.prompt-setting-flex .setting-item-control {
+    flex: 0 0 auto !important;
+    margin-left: 8px !important;
+}
+
+.prompt-name-ellipsis {
+    max-height: 40px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.llm-result-modal-buttons {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+    gap: 8px;
+    width: 100%;
+    align-items: flex-start;
+}
+  
+.llm-result-modal-buttons button {
+    padding: 8px 12px;
+    width: auto;
+    text-align: left;
+    min-width: 150px;
+}
+  
+.llm-mode-remember {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+    justify-content: flex-start;
+}
+
+.llm-result-container {
+    max-width: 320px;
+    width: 100%;
+}
+
+.llm-result-container h3 {
+    margin-top: 0.5em;
+    margin-bottom: 0.8em;
 }

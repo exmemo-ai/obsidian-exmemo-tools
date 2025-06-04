@@ -1,5 +1,12 @@
 import { t } from "./lang/helpers";
 
+export enum LLMResultMode {
+	APPEND = "append",
+	PREPEND = "prepend",
+	REPLACE = "replace",
+	UNKNOWN = "unknown"
+}
+
 export interface ExMemoSettings {
 	llmToken: string;
 	llmBaseUrl: string;
@@ -23,7 +30,7 @@ export interface ExMemoSettings {
 	metaUpdatedFieldName: string;
 	metaCreatedFieldName: string;
 	metaTagsPrompt: string;
-	customMetadata: Array<{key: string, value: string}>;
+	customMetadata: Array<{key: string, value: string, type: string}>;
 	metaCategoryFieldName: string;
 	categories: string[];
 	metaCategoryPrompt: string;
@@ -35,6 +42,11 @@ export interface ExMemoSettings {
 	metaCoverFieldName: string;
 	metaCoverUrl: string;
 	metaCoverUseFirst: boolean;
+	llmResultMode: LLMResultMode;
+    insertCardsAt: 'before' | 'after';
+    regenerateExistingCards: boolean;
+	zettelkastenPrompt: string;
+    indexFileDirectory: string;
 }
 
 export const DEFAULT_SETTINGS: ExMemoSettings = {
@@ -72,4 +84,9 @@ export const DEFAULT_SETTINGS: ExMemoSettings = {
 	metaCoverFieldName: 'cover',
 	metaCoverUrl: '',
 	metaCoverUseFirst: false,
+	llmResultMode: LLMResultMode.UNKNOWN,
+	insertCardsAt: 'before',
+	regenerateExistingCards: false,
+	zettelkastenPrompt: t('defaultZettelkastenPrompt'),
+    indexFileDirectory: "",
 }

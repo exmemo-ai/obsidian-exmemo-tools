@@ -19,9 +19,21 @@ export default {
 
   // LLM Settings
   "llmSettings": "LLM",
+  "llmSettingsDesc": "Configure LLM service settings",
   "apiKey": "API key",
   "baseUrl": "Base URL",
   "modelName": "Model name",
+  "testLlmConnection": "Test LLM Connection",
+  "testLlmConnectionDesc": "Test whether the current LLM configuration can connect normally",
+  "testConnection": "Test Connection",
+  "testing": "Testing...",
+  "connectionSuccess": "Connection successful! LLM service is working properly",
+  "connectionFailed": "Connection failed",
+  "connectionError": "Connection error",
+  "apiKeyEmpty": "API Key cannot be empty",
+  "modelNameEmpty": "Model name cannot be empty",
+  "connectionTestPrompt": "Please reply 'Connection test successful' and nothing else.",
+  "apiResponseEmpty": "API connection failed or no response received",
 
   // Meta Update Settings
   "metaSetting": "Meta",
@@ -31,11 +43,12 @@ export default {
   "updateMetaOptionsDesc": "If meta already exists, choose whether to regenerate",
   "updateForce": "Force update existing items",
   "updateNoLLM": "Only update items that do not use LLM",
+  "alreadyContainsMetadata": "Data already contains meta info",
 
   // Content Truncation Settings
   "truncateSettings": "Content truncation",
   "truncateContent": "Truncate long content?",
-  "truncateContentDesc": "When using LLM, whether to truncate if the content exceeds the maximum word count",
+  "truncateContentDesc": "When using LLM, whether to truncate if the file content exceeds the maximum word count",
   "maxContentLength": "Max content length after truncation",
   "maxContentLengthDesc": "Set the maximum token limit for the content",
   "truncateMethod": "Truncation method",
@@ -58,7 +71,8 @@ export default {
   "tagsFieldName": "Tags field name",
   "tagsFieldNameDesc": "Field name used for automatically generating tags (default: tags)",
   "simplifyTagsConfirm": "The current tag list contains {count} tokens, do you want to use AI to simplify it?",
-  "simplifyTagsPrompt": "Please simplify the following tag list to within {count} most important tags, keeping the original format and not returning any other content. The tag list is as follows:",
+  "simplifyTagsPrompt": "Please simplify the following tag list to no more than {count} most important tags, and return in JSON format as {\"tags\": [\"tag1\", \"tag2\", ...]}, without any other content. The tag list is as follows:",
+  "tagsSimplified": "Simplified to {count} tags, using approximately {tokens} tokens",
 
   // Description Settings
   "description": "Description",
@@ -95,6 +109,9 @@ export default {
   "addField": "Add field",
   "fieldKey": "Field name",
   "fieldValue": "Field value",
+  "staticValue": "Static",
+  "promptValue": "Prompt",
+  "fieldPrompt": "Field generation prompt",
 
   // Category Settings
   "categoryOptions": "Category",
@@ -130,6 +147,16 @@ export default {
   "llmAssistantDialogEdit": "Is the prompt editable?",
   "llmAssistantDialogEditDesc": "Whether to allow editing of previously saved prompts. If allowed, please trigger the dialog through the button",
 
+  // LLM Result Handling
+  "appendToSelection": "Append after selection",
+  "prependToSelection": "Prepend before selection",
+  "replaceSelection": "Replace selection",
+  "rememberChoice": "Remember this choice",
+  "resultMode": "Result handling mode",
+  "resultModeDesc": "Choose how to handle LLM results",
+  "askEachTime": "Ask each time",
+  "chooseAction": "Please choose an action",
+
   // file migrations
   "allFolders": "All folders",
   "noFolders": "No folders found",
@@ -150,9 +177,9 @@ export default {
   "insertContent": "Content to be inserted",
 
   // Generate index
-  'foundFilesNeedProcess': "A total of {total} files are included in the subdirectory, of which {count} files need to extract information. ",
+  'foundFilesNeedProcess': "A total of {total} files are included, of which {count} files need to extract information. ",
   'processCancelled': "Processing cancelled",
-  'processComplete': "Processing complete for {count} files",
+  'processComplete': "Processed {count} files' meta information",
   'cancel': "Cancel",
   'ok': "OK",
   'continue': "Continue",
@@ -160,17 +187,19 @@ export default {
   'estimatedTokens': "Estimated consumption {tokens} token, do you want to extract information?",  
   'skip': 'Skip LLM',
   'createIndex': 'ExMemo generate dir index',
+  "addPropsToSearchResults": "ExMemo batch add metadata",
+  "createIndexFromSearch": "ExMemo create index file",
   'fileList': 'File list',
   'fileDetail': 'File detail',
   'noDescription': 'No description',
   'moc': 'MOC',
   'processingFiles': "Processing files",
   'generatingIndex': "Generating index",
-  'processCompleteWithIndex': "Completed processing {count} files and generated {dirs} directory indices",
+  'processCompleteWithIndex': "Processed {count} files' meta information and generated {dirs} directory index",
 
   // Generate index settings
   'indexFileSetting': "Index file",
-  "indexFileSettingDesc": "Generate index file for the directory and summarize the directory content",
+  "indexFileSettingDesc": "Generate index files for directories/search results and summarize content",
   'defaultIndexString': "Index file name",
   'defaultIndexStringDesc': "Default string at the beginning of the index file name",
   'indexExcludeFile': "Excluded files",
@@ -178,6 +207,13 @@ export default {
   'indexExcludeDir': "Excluded directories",
   'indexExcludeDirDesc': "Specify directories that do not need to be indexed. Directories containing specified keywords will be excluded. Use * as a wildcard and separate with commas.",
   'foundDirsNeedIndex': "{dirs} directories that need to extract information.",
+  'failedToCreateIndex': "Failed to create index file",
+  'indexCreated': "Index created at {path}",
+  'indexUpdated': "Index updated at {path}",
+  'noFilesToProcess': "No files to process",
+  "indexFileDirectory": "Index File Directory",
+  "indexFileDirectoryDesc": "Directory where search index files will be saved. Default is root directory.",
+  "indexQueryNotSupported": "Regenerating index files from search results is not supported yet",
 
   // Prompt Manager
   "promptManager": "Prompt Manager",
@@ -185,11 +221,16 @@ export default {
   "addNewPrompt": "Add New Prompt",
   "enterPrompt": "Enter prompt",
   "editPrompt": "Edit Prompt",
+  "clearPrompts": "Clear Prompt",
+  "resetPrompt": "Reset Prompt",
   "useCount": "Usage count",
   "save": "Save",
   "managePrompts": "Manage Prompts",
   "managePromptsDesc": "Prompt manager for adding, deleting and editing prompts",
   "openPromptManager": "Open Prompt Manager",
+  "clearPromptsConfirmation": "Clear Prompts Confirmation",
+  "clearPromptsWarning": "Clearing prompts will delete all custom prompts, do you want to continue?",
+  "clear": "Clear",
 
   // Cover Image Settings
   "coverImage": "Cover Image",
@@ -200,5 +241,43 @@ export default {
   "coverUrl": "Default Cover URL",
   "coverUrlDesc": "Default cover image URL to use when no image is found",
   "useFirstImage": "Use First Image",
-  "useFirstImageDesc": "Automatically use the first image in the article as cover"
+  "useFirstImageDesc": "Automatically use the first image in the article as cover",
+
+  // Import/Export Settings
+  "importExportSettings": "Import/Export Settings",
+  "importExportSettingsDesc": "Import or export plugin settings",
+  "exportSettings": "Export Settings",
+  "exportSettingsDesc": "Export current settings to a JSON file",
+  "importSettings": "Import Settings",
+  "importSettingsDesc": "Import settings from a JSON file",
+  "export": "Export",
+  "import": "Import",
+  "settingsExported": "Settings exported",
+  "settingsImported": "Settings imported",
+  "invalidSettingsFile": "Invalid settings file",
+  "importSettingsWarning": "Importing will overwrite all current ExMemo Tools settings. Continue?",
+  "confirmationRequired": "Confirmation Required",
+
+  // Zettelkasten Settings
+  "cards": "Cards",
+  "zettelkastenOptions": "Zettelkasten Settings",
+  "zettelkastenPosition": "Insert Position",
+  "zettelkastenPositionDesc": "Choose where to insert the Zettelkasten content",
+  "documentTop": "Document Top",
+  "documentBottom": "Document Bottom",
+  "zettelkastenPrompt": "Zettelkasten Prompt",
+  "zettelkastenPromptDesc": "Prompt used to generate Zettelkasten note content. The system will generate based on the current document content.",
+  "exmemoCreateZettelkasten": "Generate a card",
+  "errorExtractingZettelkasten": "Error extracting Zettelkasten note",
+  "noActiveEditor": "No active editor found. Please open a markdown file first.",
+  "batchZettelkastenComplete": "Batch Zettelkasten creation complete. Successfully processed {successCount} files, failed {failCount} files.",
+  "zettelkastenCreated": "Zettelkasten note created successfully",
+  "insertCardsAt":"Insert Position",
+  "insertCardsAtDesc":"Choose where to insert Zettelkasten cards",
+  "beforeContent":"Before Content",
+  "afterContent":"After Content",
+  "regenerateExistingCards":"Regenerate Existing Cards",
+  "regenerateExistingCardsDesc":"Whether to regenerate existing Zettelkasten cards",
+  "cardsAlreadyExist": "Zettelkasten cards already exist",
+  "defaultZettelkastenPrompt": "Please generate a Zettelkasten-style summary based on the following note content, including:\n1. Main concepts and ideas\n2. Connections to other concepts\n3. Possible applications",
 }

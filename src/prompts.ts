@@ -47,6 +47,12 @@ export async function addPrompt(plugin: any, prompt: string, count: number = 0) 
     return prompts[prompt];
 }
 
+export async function clearPrompts(plugin: any) {
+    plugin.settings.llmPrompts = {};
+    await plugin.saveSettings();
+    return plugin.settings.llmPrompts;
+}
+
 export class PromptModal extends Modal {
     private prompts: PromptList;
     private plugin: any;
@@ -70,7 +76,11 @@ export class PromptModal extends Modal {
             .addButton(btn => btn
                 .setButtonText(t('addPrompt'))
                 .setCta()
-                .onClick(() => this.showAddPromptDialog()));
+                .onClick(() => this.showAddPromptDialog()))
+            .addButton(btn => btn
+                .setButtonText(t('clearPrompts'))
+                .setWarning()
+                .onClick(() => this.showClearPromptsConfirmation()));
 
         // 提示列表容器
         const promptsContainer = contentEl.createEl('div', { cls: 'prompts-container' });
@@ -116,7 +126,7 @@ export class PromptModal extends Modal {
                 }
             });
 
-            new Setting(promptEl)
+            const setting = new Setting(promptEl)
                 .setName(prompt)
                 .setDesc(`${t('useCount')}: ${data.count}`)
                 .addButton(btn => btn
@@ -125,6 +135,14 @@ export class PromptModal extends Modal {
                 .addButton(btn => btn
                     .setIcon('trash')
                     .onClick(() => this.deletePrompt(prompt)));
+            
+            const nameEl = setting.nameEl;
+            nameEl.addClass('prompt-name-ellipsis');
+            
+            const settingItem = promptEl.querySelector('.setting-item');
+            if (settingItem instanceof HTMLElement) {
+                settingItem.addClass('prompt-setting-flex');
+            }
         });
     }
 
@@ -190,9 +208,14 @@ export class PromptModal extends Modal {
         const promptInput = modal.contentEl.createEl('textarea');
         promptInput.value = oldPrompt;
         promptInput.style.width = '100%';
-        promptInput.style.height = '100px';
+        promptInput.style.height = '200px';
 
         new Setting(modal.contentEl)
+            .addButton(btn => btn
+                .setButtonText(t('resetPrompt'))
+                .onClick(() => {
+                    promptInput.value = oldPrompt;
+                }))
             .addButton(btn => btn
                 .setButtonText(t('save'))
                 .setCta()
@@ -205,6 +228,32 @@ export class PromptModal extends Modal {
                         this.renderPromptList(this.contentEl.querySelector('.prompts-container'));
                         modal.close();
                     }
+                }));
+
+        modal.open();
+    }
+
+    private async showClearPromptsConfirmation() {
+        const modal = new Modal(this.app);
+        modal.titleEl.setText(t('clearPromptsConfirmation'));
+        
+        const confirmText = modal.contentEl.createEl('p');
+        confirmText.setText(t('clearPromptsWarning'));
+        
+        new Setting(modal.contentEl)
+            .addButton(btn => btn
+                .setButtonText(t('cancel'))
+                .onClick(() => {
+                    modal.close();
+                }))
+            .addButton(btn => btn
+                .setButtonText(t('clear'))
+                .setWarning()
+                .onClick(async () => {
+                    await clearPrompts(this.plugin);
+                    this.prompts = this.plugin.settings.llmPrompts;
+                    this.renderPromptList(this.contentEl.querySelector('.prompts-container'));
+                    modal.close();
                 }));
 
         modal.open();

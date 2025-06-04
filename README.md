@@ -15,6 +15,7 @@ Watch the video：
 * Metadata Management - Auto-generate tags, descriptions, titles
 * Directory Indexing - Create directory summaries and content tags
 * AI-Assisted Editing - Support content optimization and text continuation
+* Generate Card - Create Luhmann cards for files or selected paragraphs
 
 ## Quick Start
 
@@ -22,8 +23,10 @@ Watch the video：
 
 1. Configure LLM parameters: Set API key, base URL, and model name
 2. Optional: Configure tag list or auto-extract tags from repository
-3. Optional: Customize description generation prompts
+3. Optional: Customize metadata generation prompts
 4. Recommended: Enable "content truncation" for long documents to control API costs
+
+> Need more detailed setup guide? Check out the [Configuration Documentation](https://github.com/exmemo-ai/obsidian-exmemo-tools/blob/master//docs/configuration.md)
 
 ### Core Features
 
@@ -31,18 +34,23 @@ Watch the video：
 - Auto-generate tags, descriptions, titles, categories, and dates
 - Support incremental updates for existing metadata
 
-**Directory Index** (Right-click directory > ExMemo Generate Directory Index)
-- Generate directory structure and content summary
-- Auto-extract and aggregate tags
-
 **Smart Archiving** (Ctrl+P > ExMemo Tools: Select Suitable Directory for Current File)
 - Recommend best directories based on file content
 - Support directory filtering and path completion
 
-**Content Management** (Ctrl+P > ExMemo Tools: Insert selected text/LLM Assistant/Continue Writing)
+**Smart Content Editing** (Ctrl+P > ExMemo Tools: Insert selected text/LLM Assistant/Continue Writing)
 - Smart insertion point location
 - AI-assisted content editing (with prompt management)
 - Context-aware text continuation
+
+**Generate Card** (Ctrl+P > ExMemo Tools: Generate Luhmann Card)
+- Create Luhmann cards based on selected text or file content
+- Automatically insert cards into the file
+
+**Generate Index** (Right-click directory > ExMemo Generate Directory Index / Search results > Create Index)
+- Generate directory structure and content summary
+- Auto-extract and aggregate tags
+- Auto-extract cards from files
 
 ## License
 

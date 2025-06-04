@@ -1,7 +1,9 @@
-import { PluginSettingTab, Setting, App, TextAreaComponent, Notice } from 'obsidian';
+import { PluginSettingTab, Setting, App, TextAreaComponent, Notice, Modal } from 'obsidian';
 import { PromptModal } from './prompts';
-import { loadTags } from "./utils";
+import { loadTags, confirmDialog } from "./utils";
 import { t } from "./lang/helpers";
+import { testLlmConnection } from './llm_utils';
+import { LLMResultMode } from "./settings";
 
 export class ExMemoSettingTab extends PluginSettingTab {
 	plugin;
@@ -16,27 +18,35 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		this.addGeneralSettings();
-		this.addLLMSettings();
+		this.addAssistantSettings();
+		this.addTruncateSettings();
 		this.addFolderSettings();
 		this.addMetadataSettings();
+		this.addCardSettings();
 		this.addIndexFileSettings();
+		this.addImportExportSettings();
 		this.addDonationSettings();
 	}
 
 	private addGeneralSettings(): void {
-		// LLM 设置部分
-		new Setting(this.containerEl).setName(t("llmSettings"))
-			.setHeading();
-		new Setting(this.containerEl)
+		const llmContainer = this.containerEl.createEl('div');
+		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
+		collapseEl.createEl('summary', { text: t("llmSettings") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("llmSettingsDesc"));
+		
+		new Setting(collapseEl)
 			.setName(t("apiKey"))
 			.addText(text => text
 				.setPlaceholder('Enter your token')
-				.setValue(this.plugin.settings.llmToken)
+				.setValue(this.plugin.settings.llmToken ? '•'.repeat(Math.min(20, this.plugin.settings.llmToken.length)) : '')
 				.onChange(async (value) => {
-					this.plugin.settings.llmToken = value;
-					await this.plugin.saveSettings();
+					if (!value.match(/^[•]+$/)) {
+						this.plugin.settings.llmToken = value;
+						await this.plugin.saveSettings();
+					}
 				}));
-		new Setting(this.containerEl)
+		new Setting(collapseEl)
 			.setName(t("baseUrl"))
 			.addText(text => text
 				.setPlaceholder('https://api.openai.com/v1')
@@ -45,7 +55,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 					this.plugin.settings.llmBaseUrl = value;
 					await this.plugin.saveSettings();
 				}));
-		new Setting(this.containerEl)
+		new Setting(collapseEl)
 			.setName(t("modelName"))
 			.addText(text => text
 				.setPlaceholder('gpt-4o')
@@ -53,10 +63,37 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.llmModelName = value;
 					await this.plugin.saveSettings();
-				}));
+					}));
+		
+		new Setting(collapseEl)
+			.setName(t("testLlmConnection"))
+			.setDesc(t("testLlmConnectionDesc"))
+			.addButton((button) => {
+				button
+					.setButtonText(t("testConnection"))
+					.setCta()
+					.onClick(async () => {
+						button.setButtonText(t("testing"));
+						button.setDisabled(true);
+						
+						try {
+							const result = await testLlmConnection(this.plugin.settings);
+							if (result.success) {
+								new Notice(t("connectionSuccess"));
+							} else {
+								new Notice(t("connectionFailed") + ": " + result.error, 5000);
+							}
+						} catch (error) {
+							new Notice(t("connectionError") + ": " + error.message, 5000);
+						} finally {
+							button.setButtonText(t("testConnection"));
+							button.setDisabled(false);
+						}
+					});
+			});
 	}
 
-	private addLLMSettings(): void {
+	private addAssistantSettings(): void {
 		const llmContainer = this.containerEl.createEl('div');
 		const collapseEl = llmContainer.createEl('details', { cls: 'setting-item-collapse' });
 		collapseEl.createEl('summary', { text: t("llmAssistantSetting") });
@@ -70,6 +107,22 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				toggle.setValue(this.plugin.settings.llmDialogEdit)
 					.onChange(async (value) => {
 						this.plugin.settings.llmDialogEdit = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(collapseEl)
+			.setName(t("resultMode"))
+			.setDesc(t("resultModeDesc"))
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption(LLMResultMode.UNKNOWN, t("askEachTime"))
+					.addOption(LLMResultMode.APPEND, t("appendToSelection"))
+					.addOption(LLMResultMode.PREPEND, t("prependToSelection"))
+					.addOption(LLMResultMode.REPLACE, t("replaceSelection"))
+					.setValue(this.plugin.settings.llmResultMode)
+					.onChange(async (value) => {
+						this.plugin.settings.llmResultMode = value;
 						await this.plugin.saveSettings();
 					});
 			});
@@ -106,36 +159,10 @@ export class ExMemoSettingTab extends PluginSettingTab {
 			});
 	}
 
-	private addMetadataSettings(): void {
-		// 元数据设置部分
-		const llmContainer = this.containerEl.createEl('div');
-		const collapseEl = llmContainer.createEl('details', { 
-			cls: 'setting-item-collapse',
-			attr: { id: 'meta-settings-collapse' }
-		});
-		collapseEl.createEl('summary', { text: t("metaSetting") });
-		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
-		descEl.setText(t("metaSettingDesc"));
-
-		// update meta settings
-		new Setting(collapseEl)
-			.setName(t("metaUpdateSetting"))
-			.setDesc(t("updateMetaOptionsDesc"))
-			.setClass("setting-item-indent1")
-			.addDropdown((dropdown) => {
-				dropdown
-					.addOption('force', t("updateForce"))
-					.addOption('no-llm', t("updateNoLLM"))
-					.setValue(this.plugin.settings.metaUpdateMethod)
-					.onChange(async (value) => {
-						this.plugin.settings.metaUpdateMethod = value;
-						await this.plugin.saveSettings();
-					});
-			});
-
-		// 创建截断设置的折叠面板
-		const truncateCollapseEl = collapseEl.createEl('details', {
-			cls: 'setting-item-collapse nested-settings'
+	private addTruncateSettings(): void {
+		const container = this.containerEl.createEl('div');
+		const truncateCollapseEl = container.createEl('details', {
+			cls: 'setting-item-collapse'
 		});
 		truncateCollapseEl.createEl('summary', { text: t("truncateSettings") });
 
@@ -183,6 +210,36 @@ export class ExMemoSettingTab extends PluginSettingTab {
 
 		// 初始化显示状态
 		truncateContainer.style.display = this.plugin.settings.metaIsTruncate ? 'block' : 'none';
+	}
+
+	private addMetadataSettings(): void {
+		// 元数据设置部分
+		const llmContainer = this.containerEl.createEl('div');
+		const collapseEl = llmContainer.createEl('details', { 
+			cls: 'setting-item-collapse',
+			attr: { id: 'meta-settings-collapse' }
+		});
+		collapseEl.createEl('summary', { text: t("metaSetting") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("metaSettingDesc"));
+
+		// update meta settings
+		new Setting(collapseEl)
+			.setName(t("metaUpdateSetting"))
+			.setDesc(t("updateMetaOptionsDesc"))
+			.setClass("setting-item-indent1")
+			.addDropdown((dropdown) => {
+				dropdown
+					.addOption('force', t("updateForce"))
+					.addOption('no-llm', t("updateNoLLM"))
+					.setValue(this.plugin.settings.metaUpdateMethod)
+					.onChange(async (value) => {
+						this.plugin.settings.metaUpdateMethod = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+
 
 		// 描述设置部分
 		const descCollapseEl = collapseEl.createEl('details', {
@@ -252,6 +309,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 						}
 						this.plugin.settings.tags = currentTagList;
 						textComponent.setValue(this.plugin.settings.tags.join('\n'));						
+						await this.plugin.saveSettings();
 					});
 			});
 		new Setting(tagsCollapseEl)
@@ -281,9 +339,7 @@ export class ExMemoSettingTab extends PluginSettingTab {
 					});
 				text.inputEl.setAttr('rows', '3');
 				text.inputEl.addClass('setting-textarea');
-			});
-
-
+				});
 
 		// 类别设置部分
 		const categoryCollapseEl = collapseEl.createEl('details', {
@@ -501,7 +557,8 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				.onClick(async () => {
 					this.plugin.settings.customMetadata.push({
 						key: '',
-						value: ''
+						value: '',
+						type: 'static'
 					});
 					await this.plugin.saveSettings();
 					this.refresh();
@@ -510,32 +567,106 @@ export class ExMemoSettingTab extends PluginSettingTab {
 		interface CustomMetadata {
 			key: string;
 			value: string;
+			type?: string;
 		}
 
 		this.plugin.settings.customMetadata.forEach((meta: CustomMetadata, index: number) => {
-			new Setting(customMetaCollapseEl)
-				.addText(text => text
-					.setPlaceholder(t('fieldKey'))
-					.setValue(meta.key)
+			const settingContainer = new Setting(customMetaCollapseEl);
+			
+			settingContainer.addText(text => text
+				.setPlaceholder(t('fieldKey'))
+				.setValue(meta.key)
+				.onChange(async (value) => {
+					this.plugin.settings.customMetadata[index].key = value;
+					await this.plugin.saveSettings();
+				}));
+			
+				settingContainer.addDropdown(dropdown => dropdown
+					.addOption('static', t('staticValue'))
+					.addOption('prompt', t('promptValue'))
+					.setValue(meta.type || 'static')
 					.onChange(async (value) => {
-						this.plugin.settings.customMetadata[index].key = value;
+						this.plugin.settings.customMetadata[index].type = value;
 						await this.plugin.saveSettings();
-					}))
-				.addText(text => text
-					.setPlaceholder(t('fieldValue'))
+					}));
+				
+				settingContainer.addText(text => text
+					.setPlaceholder(meta.type === 'prompt' ? t('fieldPrompt') : t('fieldValue'))
 					.setValue(meta.value)
 					.onChange(async (value) => {
 						this.plugin.settings.customMetadata[index].value = value;
 						await this.plugin.saveSettings();
-					}))
-				.addButton(button => button
+						//this.refresh();
+					}));
+				
+				settingContainer.addButton(button => button
 					.setIcon('trash')
 					.onClick(async () => {
 						this.plugin.settings.customMetadata.splice(index, 1);
 						await this.plugin.saveSettings();
 						this.refresh();
 					}));
-		});
+			});
+	}
+
+	private addCardSettings(): void {
+		const cardContainer = this.containerEl.createEl('div');
+		const zettelkastenCollapseEl = cardContainer.createEl('details', { cls: 'setting-item-collapse' });
+		zettelkastenCollapseEl.createEl('summary', { text: t("zettelkastenOptions") || "zettelkastenOptions" });
+		
+		new Setting(zettelkastenCollapseEl)
+			.setName(t('zettelkastenPosition'))
+			.setDesc(t('zettelkastenPositionDesc'))
+			.addDropdown(dropdown => dropdown
+				.addOption('top', t('documentTop'))
+				.addOption('bottom', t('documentBottom'))
+				.setValue(this.plugin.settings.zettelkastenPosition || 'bottom')
+				.onChange(async (value) => {
+					if (!this.plugin.settings.hasOwnProperty('zettelkastenPosition')) {
+						this.plugin.settings.zettelkastenPosition = 'bottom';
+					}
+					this.plugin.settings.zettelkastenPosition = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(zettelkastenCollapseEl)
+			.setName(t('zettelkastenPrompt'))
+			.setDesc(t('zettelkastenPromptDesc'))
+			.addTextArea(text => {
+				text.setPlaceholder(t('defaultZettelkastenPrompt'))
+					.setValue(this.plugin.settings.zettelkastenPrompt)
+					.onChange(async (value) => {
+						if (!this.plugin.settings.hasOwnProperty('zettelkastenPrompt')) {
+							this.plugin.settings.zettelkastenPrompt = "";
+						}
+						this.plugin.settings.zettelkastenPrompt = value;
+						await this.plugin.saveSettings();
+					});
+				text.inputEl.setAttr('rows', '5');
+				text.inputEl.addClass('setting-textarea');
+			});
+
+			new Setting(zettelkastenCollapseEl)
+			.setName(t('insertCardsAt'))
+			.setDesc(t('insertCardsAtDesc'))
+			.addDropdown(dropdown => dropdown
+				.addOption('before', t('beforeContent'))
+				.addOption('after', t('afterContent'))
+				.setValue(this.plugin.settings.insertCardsAt)
+				.onChange(async (value) => {
+					this.plugin.settings.insertCardsAt = value as 'before' | 'after';
+					await this.plugin.saveSettings();
+				}));
+		
+		new Setting(zettelkastenCollapseEl)
+			.setName(t('regenerateExistingCards'))
+			.setDesc(t('regenerateExistingCardsDesc'))
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.regenerateExistingCards)
+				.onChange(async (value) => {
+					this.plugin.settings.regenerateExistingCards = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 
 	private refresh(): void {
@@ -599,7 +730,92 @@ export class ExMemoSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					this.plugin.settings.indexExcludeDir = value;
 					await this.plugin.saveSettings();
-				}));				
+				}));
+
+		new Setting(collapseEl)
+			.setName(t('indexFileDirectory'))
+			.setDesc(t('indexFileDirectoryDesc'))
+			.addText(text => text
+				.setPlaceholder('')
+				.setValue(this.plugin.settings.indexFileDirectory)
+				.onChange(async (value) => {
+					this.plugin.settings.indexFileDirectory = value;
+					await this.plugin.saveSettings();
+				}));
+	}
+
+	private addImportExportSettings(): void {
+		const importExportContainer = this.containerEl.createEl('div');
+		const collapseEl = importExportContainer.createEl('details', { cls: 'setting-item-collapse' });
+		collapseEl.createEl('summary', { text: t("importExportSettings") });
+		const descEl = collapseEl.createEl('div', { cls: 'setting-item-description' });
+		descEl.setText(t("importExportSettingsDesc"));
+
+		new Setting(collapseEl)
+			.setName(t("exportSettings"))
+			.setDesc(t("exportSettingsDesc"))
+			.addButton((button) => {
+				button.setButtonText(t("export"))
+					.setCta()
+					.onClick(() => {
+						const settingsJson = JSON.stringify(this.plugin.settings, null, 2);
+						const blob = new Blob([settingsJson], { type: "application/json" });
+						const url = URL.createObjectURL(blob);
+						
+						const a = document.createElement("a");
+						a.href = url;
+						a.download = `exmemo_tools_settings_${new Date().toISOString().split('T')[0]}.json`;
+						document.body.appendChild(a);
+						a.click();
+						
+						setTimeout(() => {
+							document.body.removeChild(a);
+							URL.revokeObjectURL(url);
+						}, 0);
+						
+						new Notice(t("settingsExported"));
+					});
+			});
+
+		new Setting(collapseEl)
+			.setName(t("importSettings"))
+			.setDesc(t("importSettingsDesc"))
+			.addButton((button) => {
+				button.setButtonText(t("import"))
+					.onClick(() => {
+						const fileInput = document.createElement("input");
+						fileInput.type = "file";
+						fileInput.accept = "application/json";
+						
+						fileInput.addEventListener("change", (e) => {
+							const target = e.target as HTMLInputElement;
+							const file = target.files?.[0];
+							
+							if (file) {
+								const reader = new FileReader();
+								reader.onload = async (e) => {
+									try {
+										const settingsJson = e.target?.result as string;
+										const settingsObj = JSON.parse(settingsJson);										
+										const confirm = await confirmDialog(this.app, t("importSettingsWarning"))
+										if (confirm) {
+											this.plugin.settings = Object.assign({}, this.plugin.settings, settingsObj);
+											await this.plugin.saveSettings();
+											this.display();
+											new Notice(t("settingsImported"));
+										}										
+									} catch (error) {
+										console.error(error);
+										new Notice(t("invalidSettingsFile"));
+									}
+								};
+								reader.readAsText(file);
+							}
+						});
+						
+						fileInput.click();
+					});
+			});
 	}
 
 	private addDonationSettings(): void {

@@ -1,6 +1,6 @@
 import { App, SuggestModal, Modal, Notice } from 'obsidian';
 import { ExMemoSettings } from './settings';
-import { callLLM } from "./utils";
+import { callLLM } from "./llm_utils";
 import { confirmDialog } from './utils';
 import { t } from "./lang/helpers"
 

@@ -19,9 +19,21 @@ export default {
 
     // LLM 设置
     "llmSettings": "LLM",
+    "llmSettingsDesc": "配置 LLM 服务的相关设置",
     "apiKey": "API Key",
     "baseUrl": "Base URL",
     "modelName": "模型名称",
+    "testLlmConnection": "测试 LLM 连接",
+    "testLlmConnectionDesc": "测试当前 LLM 配置是否能够正常连接",
+    "testConnection": "测试连接",
+    "testing": "测试中...",
+    "connectionSuccess": "连接成功！LLM 服务运行正常",
+    "connectionFailed": "连接失败",
+    "connectionError": "连接错误",
+    "apiKeyEmpty": "API Key不能为空",
+    "modelNameEmpty": "模型名称不能为空",
+    "connectionTestPrompt": "请回复'连接测试成功'，不要回复其他内容。",
+    "apiResponseEmpty": "API连接失败或未返回响应",
 
     // 元数据更新设置
     "metaSetting": "生成元数据",
@@ -31,11 +43,12 @@ export default {
     "updateMetaOptionsDesc": "如果元数据已经存在，是否重新生成",
     "updateForce": "强制更新已存在项",
     "updateNoLLM": "只更新不用LLM的项",
+    "alreadyContainsMetadata": "已包含元数据",
 
     // 内容截断设置
     "truncateSettings": "内容截断",
     "truncateContent": "内容太长是否截断",
-    "truncateContentDesc": "使用LLM时，如果内容超过最大字数，是否截断",
+    "truncateContentDesc": "使用LLM时，如果文件内容超过最大字数，是否截断",
     "maxContentLength": "截断后最大内容长度",
     "maxContentLengthDesc": "设置内容的最大 token 限制",
     "truncateMethod": "截断方式",
@@ -58,7 +71,8 @@ export default {
     "tagsFieldName": "标签字段名",
     "tagsFieldNameDesc": "自动生成标签使用的字段名 (默认: tags)",
     "simplifyTagsConfirm": "当前标签列表包含 {count} 个tokens，是否需要使用AI自动精简？",
-    "simplifyTagsPrompt": "请将以下标签列表精简到{count}个以内最重要的标签，保持原有格式，不返回其它内容，标签列表如下：",
+    "simplifyTagsPrompt": "请将以下标签列表精简到{count}个以内最重要的标签，并以JSON格式返回，格式为{\"tags\": [\"标签1\", \"标签2\", ...]}，不要返回任何其它内容。标签列表如下：",
+    "tagsSimplified": "已精简到 {count} 个标签，约使用 {tokens} 个token",
 
     // 描述设置
     "description": "描述",
@@ -95,6 +109,9 @@ export default {
     "addField": "添加字段",
     "fieldKey": "字段名",
     "fieldValue": "字段值",
+    "staticValue": "静态",
+    "promptValue": "提示词",
+    "fieldPrompt": "字段生成提示词",
 
     // 类别设置
     "categoryOptions": "类别",
@@ -130,6 +147,16 @@ export default {
     "llmAssistantDialogEdit": "提示词是否可编辑",
     "llmAssistantDialogEditDesc": "是否允许编辑之前保存的提示词；如果允许，则需要通过按钮来触发对话",
 
+    // LLM 结果处理
+    "appendToSelection": "添加到选区后",
+    "prependToSelection": "添加到选区前",
+    "replaceSelection": "替换选区",
+    "rememberChoice": "记住此选择",
+    "resultMode": "结果处理模式",
+    "resultModeDesc": "选择 LLM 结果的处理方式",
+    "askEachTime": "每次询问",
+    "chooseAction": "请选择操作",
+
     // 文件迁移
     "allFolders": "全部目录",
     "noFolders": "没有找到目录",
@@ -150,26 +177,28 @@ export default {
     "insertContent": "待插入内容",
 
     // 生成索引
-    "foundFilesNeedProcess": "子目录中共纳入 {total} 个文件，其中 {count} 个文件需要提取信息。",
+    "foundFilesNeedProcess": "共纳入 {total} 个文件，其中 {count} 个文件需要提取信息。",
     "processCancelled": "处理已取消",
-    "processComplete": "已完成处理 {count} 个文件",
+    "processComplete": "已处理 {count} 个文件的 Meta 信息",
     "cancel": "取消",
     "continue": "继续",
     "processing": "处理中",
     "estimatedTokens": "预计消耗 {tokens} token，是否用模型提取信息？",
     "skip": "跳过 LLM 提取",
     "createIndex": "ExMemo生成目录索引",
+    "addPropsToSearchResults": "ExMemo批量添加元数据",
+    "createIndexFromSearch": "ExMemo从搜索结果创建索引",
     "fileList": "文件列表",
     "fileDetail": "文件详情",
     "noDescription": "暂无",
     "moc": "目录",
     "processingFiles": "处理文件",
     "generatingIndex": "生成索引",
-    "processCompleteWithIndex": "已完成处理 {count} 个文件并生成 {dirs} 个目录索引",
+    "processCompleteWithIndex": "已处理 {count} 个文件的 Meta 信息，并生成 {dirs} 个目录索引",
 
     // 生成索引设置
     "indexFileSetting": "生成索引文件",
-    "indexFileSettingDesc": "为目录生成索引文件，并总结目录内容",
+    "indexFileSettingDesc": "为目录/搜索结果生成索引文件，并总结内容",
     "defaultIndexString": "索引文件名",
     "defaultIndexStringDesc": "索引文件名开头的默认字符串",
     "indexExcludeFile": "排除的文件",
@@ -177,18 +206,30 @@ export default {
     "indexExcludeDir": "排除的目录",
     "indexExcludeDirDesc": "指定不需要建立索引的目录，包含指定关键字的目录将被排除。使用 * 作为通配符，并用逗号分隔。",
     "foundDirsNeedIndex": "{dirs} 个目录需要提取信息。",
-
+    'failedToCreateIndex': "无法创建索引",
+    'indexCreated': "创建索引：{path}",
+    'indexUpdated': "更新索引：{path}",
+    'noFilesToProcess': "没有需要处理的文件",
+    "indexFileDirectory": "索引文件目录",
+    "indexFileDirectoryDesc": "搜索结果生成的索引文件存放的目录。默认为根目录。",
+    "indexQueryNotSupported": "暂不支持对搜索结果重新生成索引文件",
+    
     // 提示词管理器
     "promptManager": "提示词管理",
     "addPrompt": "添加提示词",
     "addNewPrompt": "添加新提示词",
     "enterPrompt": "请输入提示词",
     "editPrompt": "编辑提示词",
+    "clearPrompts": "清除提示词",
+    "resetPrompt": "重置提示词",
     "useCount": "使用次数",
     "save": "保存",
     "managePrompts": "管理提示词",
     "managePromptsDesc": "提示词管理器，支持添加、删除和编辑提示词",
     "openPromptManager": "打开提示词管理器",
+    "clearPromptsConfirmation": "清除提示词确认",
+    "clearPromptsWarning": "清除提示词将删除所有自定义提示词，是否继续？",
+    "clear": "清除",
 
     // 封面图设置
     "coverImage": "封面图",
@@ -199,5 +240,43 @@ export default {
     "coverUrl": "默认封面图URL",
     "coverUrlDesc": "当未找到图片时使用的默认封面图地址",
     "useFirstImage": "使用第一张图片",
-    "useFirstImageDesc": "自动使用文章中的第一张图片作为封面图"    
+    "useFirstImageDesc": "自动使用文章中的第一张图片作为封面图",
+
+    // 导入/导出设置
+    "importExportSettings": "导入/导出设置",
+    "importExportSettingsDesc": "导入或导出插件设置",
+    "exportSettings": "导出设置",
+    "exportSettingsDesc": "导出当前设置为 JSON 文件",
+    "importSettings": "导入设置",
+    "importSettingsDesc": "从 JSON 文件导入设置",
+    "export": "导出",
+    "import": "导入",
+    "settingsExported": "设置已导出",
+    "settingsImported": "设置已导入",
+    "invalidSettingsFile": "无效的设置文件",
+    "importSettingsWarning": "导入将覆盖当前所有ExMemo Tools的设置，是否继续？",
+    "confirmationRequired": "需要确认",
+
+   // 卢曼卡片设置
+   "cards": "卡片",
+   "zettelkastenOptions": "卢曼卡片设置",
+   "zettelkastenPosition": "插入位置",
+   "zettelkastenPositionDesc": "选择卢曼卡片内容插入的位置",
+   "documentTop": "文档顶部",
+   "documentBottom": "文档底部",
+   "zettelkastenPrompt": "卢曼卡片提示词",
+   "zettelkastenPromptDesc": "用于生成卢曼卡片内容的提示词。系统将根据当前文档内容生成卢曼笔记。",
+   "exmemoCreateZettelkasten": "生成卢曼卡片",
+   "errorExtractingZettelkasten": "提取卢曼卡片时出错",
+   "noActiveEditor": "没有活动编辑器",
+   "batchZettelkastenComplete": "批量生成卢曼卡片完成。成功处理 {successCount} 个文件，失败 {failCount} 个文件。",
+   "zettelkastenCreated": "卢曼卡片已创建",
+   "insertCardsAt":"插入位置",
+   "insertCardsAtDesc":"选择插入卢曼卡片的位置",
+   "beforeContent":"在内容前",
+   "afterContent":"在内容后",
+   "regenerateExistingCards":"重新生成",
+   "regenerateExistingCardsDesc":"是否重新生成已存在的卢曼卡片",
+   "cardsAlreadyExist": "已存在卢曼卡片",
+   "defaultZettelkastenPrompt": "请根据以下笔记内容，生成一个卢曼卡片式的总结，包括：\n1. 主要概念和思想\n2. 与其他概念的联系\n3. 可能的应用场景",
 }

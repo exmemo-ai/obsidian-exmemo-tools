@@ -1,41 +1,7 @@
 import { App, TFile, MarkdownView, Modal, Notice, getAllTags } from 'obsidian';
-import OpenAI from "openai";
 import { ExMemoSettings } from "./settings";
 import { t } from "./lang/helpers"
-
-export async function callLLM(req: string, settings: ExMemoSettings, showNotice: boolean = true): Promise<string> {
-    let ret = '';
-    let info = null;
-    if (showNotice) {
-        info = new Notice(t("llmLoading"), 0);
-    }
-    //console.log('callLLM:', req.length, 'chars', req);
-    //console.warn('callLLM:', settings.llmBaseUrl, settings.llmToken);
-    const openai = new OpenAI({
-        apiKey: settings.llmToken,
-        baseURL: settings.llmBaseUrl,
-        dangerouslyAllowBrowser: true
-    });
-    try {
-        const completion = await openai.chat.completions.create({
-            model: settings.llmModelName,
-            messages: [
-                { "role": "user", "content": req }
-            ]
-        });
-        if (completion.choices.length > 0) {
-            ret = completion.choices[0].message['content'] || ret;
-        }
-        //console.log('LLM:', completion.usage)
-    } catch (error) {
-        new Notice(t("llmError") + "\n" + error as string);
-        console.warn('Error:', error as string);
-    }
-    if (info) {
-        info.hide();
-    }
-    return ret
-}
+import { callLLM } from "./llm_utils";
 
 class ConfirmModal extends Modal {
     private resolvePromise: (value: boolean | undefined) => void;
@@ -133,8 +99,62 @@ export async function simplifyTokens(allTags: string[], app: App, settings: ExMe
         new Notice(t("llmError"));
         return null;
     }
+    //console.log("LLM result for tags:", result);
 
-    return result.split('\n').filter(t => t.trim());
+    let cleanedResult = result.trim();
+    const codeBlockStart = cleanedResult.indexOf('```');
+    if (codeBlockStart !== -1) {
+        const codeBlockEnd = cleanedResult.lastIndexOf('```');
+        if (codeBlockEnd > codeBlockStart) {
+            const blockContent = cleanedResult.substring(codeBlockStart, codeBlockEnd + 3);
+            const lines = blockContent.split('\n');
+            if (lines.length > 1 && lines[0].startsWith('```')) {
+                lines.shift();
+            }
+            if (lines.length > 0 && lines[lines.length-1].includes('```')) {
+                lines.pop();
+            }
+            cleanedResult = lines.join('\n').trim();
+        }
+    }
+
+    let simplifiedTags: string[] = [];
+
+    try {
+        const jsonResult = JSON.parse(cleanedResult);
+        if (jsonResult && Array.isArray(jsonResult.tags)) {
+            simplifiedTags = jsonResult.tags.filter((t: unknown) => typeof t === 'string' && t.trim());
+        }
+    } catch (e) {
+        console.log("Failed to parse JSON response, falling back to text parsing", e);
+        
+        if (cleanedResult.includes('"tags":')) {
+            try {
+                const tagsMatch = cleanedResult.match(/"tags"\s*:\s*\[([\s\S]*?)\]/);
+                if (tagsMatch && tagsMatch[1]) {
+                    simplifiedTags = tagsMatch[1]
+                        .split(',')
+                        .map(tag => tag.trim().replace(/^["']|["']$/g, ''))
+                        .filter(Boolean);
+                }
+            } catch (err) {
+                console.log("Failed advanced text parsing", err);
+            }
+        }
+    }
+    
+    if (simplifiedTags.length === 0) {
+        simplifiedTags = result.split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0 && !line.startsWith('```'));
+    }
+    
+    const simplifiedTokenCount = splitIntoTokens(simplifiedTags.join(',')).length;
+    new Notice(t("tagsSimplified")
+        .replace("{count}", simplifiedTags.length.toString())
+        .replace("{tokens}", simplifiedTokenCount.toString()));
+    
+    return simplifiedTags;
 }
 
 export async function loadTags(app: App, settings: ExMemoSettings): Promise<Record<string, number>> {
@@ -194,44 +214,8 @@ export function getContentBlock(content: string, blockTitle: string): string {
     return '';
 }
 
-export async function getContent(app: App, file: TFile | null, settings: ExMemoSettings, includeMeta: boolean = false): Promise<string> {
-    let content_str = '';
-    if (file !== null) {
-        content_str = await app.vault.read(file);
-        if (settings && isIndexFile(file, settings)) {
-            const detailContent = getContentBlock(content_str, t('fileDetail'));
-            if (detailContent) {
-                content_str = detailContent;
-            }
-        } else if (!includeMeta && content_str.startsWith('---')) {
-            const endMetaIndex = content_str.indexOf('---', 3);
-            if (endMetaIndex !== -1) {
-                content_str = content_str.substring(endMetaIndex + 3).trim();
-            }
-        }
-    } else {
-        const editor = app.workspace.getActiveViewOfType(MarkdownView)?.editor;
-        if (!editor) {
-            return '';
-        }
-        content_str = editor.getSelection();
-        content_str = content_str.trim();
-        if (content_str.length === 0) {
-            content_str = editor.getValue();
-            if (!includeMeta && content_str.startsWith('---')) {
-                const endMetaIndex = content_str.indexOf('---', 3);
-                if (endMetaIndex !== -1) {
-                    content_str = content_str.substring(endMetaIndex + 3).trim();
-                }
-            }
-        }
-    }
-
-    if (content_str.length === 0) {
-        return '';
-    }
-
-    if (!settings?.metaIsTruncate) {
+export function truncateContent(content_str: string, settings: ExMemoSettings): string {
+    if (!settings?.metaIsTruncate || content_str.length === 0) {
         return content_str;
     }
 
@@ -277,6 +261,46 @@ export async function getContent(app: App, file: TFile | null, settings: ExMemoS
     return content_str;
 }
 
+export async function getContent(app: App, file: TFile | null, settings: ExMemoSettings, includeMeta: boolean = false, truncate: boolean = true): Promise<string> {
+    let content_str = '';
+    if (file !== null) {
+        content_str = await app.vault.read(file);
+        if (settings && isIndexFile(file, settings)) {
+            const detailContent = getContentBlock(content_str, t('fileDetail'));
+            if (detailContent) {
+                content_str = detailContent;
+            }
+        } else if (!includeMeta && content_str.startsWith('---')) {
+            const endMetaIndex = content_str.indexOf('---', 3);
+            if (endMetaIndex !== -1) {
+                content_str = content_str.substring(endMetaIndex + 3).trim();
+            }
+        }
+    } else {
+        const editor = app.workspace.getActiveViewOfType(MarkdownView)?.editor;
+        if (!editor) {
+            return '';
+        }
+        content_str = editor.getSelection();
+        content_str = content_str.trim();
+        if (content_str.length === 0) {
+            content_str = editor.getValue();
+            if (!includeMeta && content_str.startsWith('---')) {
+                const endMetaIndex = content_str.indexOf('---', 3);
+                if (endMetaIndex !== -1) {
+                    content_str = content_str.substring(endMetaIndex + 3).trim();
+                }
+            }
+        }
+    }
+
+    if (content_str.length === 0) {
+        return '';
+    }
+
+    return truncate ? truncateContent(content_str, settings) : content_str;
+}
+
 export function updateFrontMatter(file: TFile, app: App, key: string, value: any, method: string) {
     app.fileManager.processFrontMatter(file, (frontmatter) => {
         if (value === undefined || value === null) {
@@ -316,3 +340,20 @@ export function isIndexFile(file: TFile, settings: ExMemoSettings) {
         return false;
     }
 }
+
+export const ensureString = (value: any): string => {
+    if (value === undefined || value === null) {
+        return '';
+    }
+    if (typeof value === 'string') {
+        return value;
+    }
+    if (typeof value === 'object') {
+        try {
+            return JSON.stringify(value, null, 2);
+        } catch (e) {
+            return String(value);
+        }
+    }
+    return String(value);
+};
