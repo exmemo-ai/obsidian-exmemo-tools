@@ -353,7 +353,7 @@ async function updateIndexFile(entries: DirEntry[], indexFile: TFile, app: App, 
     }).join('\n');
 
     const fileDetail = entries.map(entry => {
-        const path = entry.isDir && entry.indexFile ? entry.indexFile.path.replace(/ /g, '%20') : entry.path;
+        const path = entry.isDir && entry.indexFile ? entry.indexFile.path.replace(/ /g, '%20') : entry.path.replace(/ /g, '%20');
         const link = entry.isDir && entry.indexFile ?
             `- [${entry.name}](${path})` :
             entry.isDir ?
