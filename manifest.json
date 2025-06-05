@@ -1,7 +1,7 @@
 {
 	"id": "exmemo-tools",
 	"name": "ExMemo Tools",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"minAppVersion": "1.4.5",
 	"description": "Use LLMs for smart document management and optimization, including relocating files, enhancing text, and generating metadata.",
 	"author": "Yan.Xie",
