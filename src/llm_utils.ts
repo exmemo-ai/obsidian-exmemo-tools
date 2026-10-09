@@ -3,6 +3,64 @@ import OpenAI from "openai";
 import { ExMemoSettings } from "./settings";
 import { t } from "./lang/helpers";
 
+export async function callWithOpenAIFetch(req: string, settings: ExMemoSettings): Promise<string> {
+    let ret = '';
+    let apiUrl = settings.llmBaseUrl?.trim();
+    if (!apiUrl) {
+        throw new Error('Base URL is not set');
+    }
+    if (apiUrl.endsWith('/')) {
+        apiUrl = apiUrl.substring(0, apiUrl.length - 1);
+    }
+    apiUrl += '/chat/completions';
+
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${settings.llmToken}`,
+    };
+
+    const requestBody = {
+        model: settings.llmModelName,
+        messages: [
+            { "role": "user", "content": req }
+        ]
+    };
+
+    // 使用 Obsidian requestUrl（不走浏览器 CORS 预检），
+    // 兼容任何 OpenAI-compatible 端点，包括未在 CORS 白名单放行
+    // X-Stainless-* 自定义头的自建网关。
+    const response = await requestUrl({
+        url: apiUrl,
+        method: 'POST',
+        headers: headers,
+        contentType: 'application/json',
+        body: JSON.stringify(requestBody),
+        throw: true
+    });
+
+    if (response.status >= 200 && response.status < 300) {
+        // 优先使用 requestUrl 解析好的 JSON
+        if (response.json) {
+            ret = extractContentFromChatCompletion(response.json) || ret;
+        }
+        // 兜底：手动 JSON.parse body，兼容
+        // "content-type: application/x-ndjson" 等非标准响应头
+        if (!ret && response.text) {
+            ret = extractContentFromChatCompletion(JSON.parse(response.text)) || ret;
+        }
+    }
+
+    return ret;
+}
+
+function extractContentFromChatCompletion(data: any): string {
+    if (data && data.choices && data.choices.length > 0 &&
+        data.choices[0].message && data.choices[0].message.content) {
+        return data.choices[0].message.content;
+    }
+    return '';
+}
+
 export async function callWithOpenAISDK(req: string, settings: ExMemoSettings): Promise<string> {
     let ret = '';
     //console.log('callLLM:', req.length, 'chars', req);
@@ -94,6 +152,18 @@ export async function callLLM(req: string, settings: ExMemoSettings, showNotice:
         const isGoogle = settings.llmBaseUrl?.includes('googleapis.com');
         
         if (!isGoogle) {
+            // 优先走 requestUrl 路径：绕开浏览器 CORS 预检，且按 body 解析
+            // 不受非标准 content-type（如 x-ndjson）影响。
+            try {
+                ret = await callWithOpenAIFetch(req, settings);
+                if (ret) {
+                    return ret;
+                }
+            } catch (reqError) {
+                console.warn('requestUrl failed, falling back to SDK:', reqError);
+            }
+            
+            // 回退：OpenAI SDK 路径
             //console.log('Using direct SDK call for non-Google API');
             ret = await callWithOpenAISDK(req, settings);
             return ret;
